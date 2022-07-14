@@ -325,17 +325,17 @@ contains
             write (*,*) (dble(this%invmat(i,j)), j = 1,size(this%mat,2) )
         enddo
     end subroutine
-    
-        subroutine CmplxExpOpT_dealloc(this)
+
+    subroutine CmplxExpOpT_dealloc(this)
         class(CmplxExpOpT), intent(inout) :: this
-        
+
         deallocate(this%mat, this%invmat, this%mat_1D2, this%invmat_1D2, this%P)
     end subroutine
 
     subroutine RealExpOpT_dealloc(this)
         class(RealExpOpT), intent(inout) :: this
-        
+
         deallocate(this%mat, this%invmat, this%mat_1D2, this%invmat_1D2, this%P)
     end subroutine
-    
+
 end module OpTTypes_mod
