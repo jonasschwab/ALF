@@ -81,7 +81,8 @@ Module Operator_mod
      !              and dimensions E_exp(N,-2:2)   for Type = 2
      !
      ! !!! If Type .neq. 1,2  then  E_exp  and  M_exp  are  not allocated !!!
-     
+     contains
+        procedure  :: get_g_t_alloc => operator_get_g_t_alloc
   end type Operator
 
   
@@ -942,4 +943,13 @@ Contains
       enddo
     enddo
   end function Op_is_real
+
+    logical function operator_get_g_t_alloc(this)
+      Implicit None
+      
+      class (Operator) , INTENT(IN)   :: this
+      
+      operator_get_g_t_alloc = this%g_t_alloc
+
+    end function operator_get_g_t_alloc
 end Module Operator_mod

@@ -187,7 +187,7 @@
 
         
         !Local
-        Complex (Kind=Kind(0.d0)) :: Z(N_FL), Z1
+        Complex (Kind=Kind(0.d0)) :: Z(N_FL), Z1, g_loc
         Integer ::  nf, I, J, n, N_type, nf_eff
         Real(Kind=Kind(0.d0)) :: spin
 
@@ -222,8 +222,10 @@
               Enddo
               if (reconstruction_needed) call ham%weight_reconstruction(Z)
               Do nf = 1, N_Fl
+                 g_loc = Op_V(n,nf)%g
+                 if (Op_V(n,nf)%get_g_t_alloc() ) g_loc = Op_V(n,nf)%g_t(nt1)
                  this%Forces(n,nt1) =  this%Forces(n,nt1)  - &
-                      &    Op_V(n,nf)%g * Z(nf) *  cmplx(real(N_SUN,Kind(0.d0)), 0.d0, Kind(0.d0)) 
+                      &    g_loc * Z(nf) *  cmplx(real(N_SUN,Kind(0.d0)), 0.d0, Kind(0.d0))
               Enddo
            endif
         enddo

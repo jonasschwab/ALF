@@ -128,7 +128,7 @@ module upgrade_mod
         Complex (Kind=Kind(0.d0)) :: Z, D_Mat, myexp, s1, s2
 
         Real    (Kind=Kind(0.d0)) :: Weight, tmp_r
-        Complex (Kind=Kind(0.d0)) :: alpha, beta
+        Complex (Kind=Kind(0.d0)) :: alpha, beta, g_loc
         Complex (Kind=Kind(0.d0)), Dimension(:, :), Allocatable :: Mat, Delta
         Complex (Kind=Kind(0.d0)), Dimension(:, :), Allocatable :: u, v
         Complex (Kind=Kind(0.d0)), Dimension(:, :), Allocatable :: y_v, xp_v
@@ -159,7 +159,9 @@ module upgrade_mod
         Do nf_eff = 1,N_FL_eff
            nf=Calc_Fl_map(nf_eff)
            !Z1 = Op_V(n_op,nf)%g * ( Phi_st(ns_new,Op_V(n_op,nf)%type) -  Phi_st(ns_old,Op_V(n_op,nf)%type))
-           Z1 = Op_V(n_op,nf)%g * ( nsigma_new%Phi(1,1) -  nsigma%Phi(n_op,nt) )
+           g_loc = Op_V(n_op,nf)%g
+           if (op_v(n_op,nf)%get_g_t_alloc()) g_loc = Op_V(n_op,nf)%g_t(nt)
+           Z1 = g_loc * ( nsigma_new%Phi(1,1) -  nsigma%Phi(n_op,nt) )
            op_dim_nf = Op_V(n_op,nf)%N_non_zero
            Do m = 1,op_dim_nf
               myexp = exp( Z1* Op_V(n_op,nf)%E(m) )
