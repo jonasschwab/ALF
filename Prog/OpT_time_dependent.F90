@@ -49,7 +49,7 @@ module OpT_time_dependent_mod
     type, extends(ContainerElementBase) :: OpT_time_dependent
 Complex(kind=kind(0.d0)), allocatable, dimension(:,:)  :: U(:,:)  !> We  store    the unitary  transformation
         Real(kind=kind(0.d0)), allocatable, dimension(:)  :: E(:)  !> We  store  the  real  eigenvaules
-        Complex(kind=kind(0.d0)),  allocatable  :: expg(:)   !>  = - \delta  \tau  t(:) 
+        Complex(kind=kind(0.d0)),  allocatable  :: g_t(:)   !>  
         Real(kind=kind(0.d0)) :: Zero
         integer, allocatable :: P(:)
         Integer :: Ndim_hop
@@ -78,7 +78,7 @@ contains
         this%P = Op_T%P ! copy all data locally to be consistent and less error prone
         this%U = Op_T%U
         this%E = Op_T%E
-        this%expg = exp(g)
+        this%g_t = g
         
     end subroutine
 
@@ -91,7 +91,7 @@ contains
         n1 = size(arg,1)
         n2 = size(arg,2)
         
-        If ( DBLE(log(this%expg(t)) * Conjg(log(this%expg(t)))) > this%Zero ) then
+        If ( DBLE( this%g_t(t) * Conjg(this%g_t(t)) ) > this%Zero ) then
         
             ! innermost unitary transform
             call ZSLGEMM('L', 'C', this%Ndim_hop, n1, n2, this%U, this%P, arg)
@@ -100,7 +100,7 @@ contains
             ! apply both diagonals
             do i = 1, n1
                 do j = 1, n2
-                    arg(i, j) = arg(i, j) * sqrt(this%expg(i)/this%expg(j)) ! quickly get the data...
+                    arg(i, j) = arg(i, j) * exp(this%g_t(t)*(this%E(i) - this%E(j))/2)
                 enddo
             enddo
             
@@ -121,11 +121,11 @@ contains
         n1 = size(arg,1)
         n2 = size(arg,2)
         
-        If ( DBLE(log(this%expg(t)) * Conjg(log(this%expg(t)))) > this%Zero ) then
+        If ( DBLE( this%g_t(t) * Conjg(this%g_t(t)) ) > this%Zero ) then
             call ZSLGEMM('R', 'N', this%Ndim_hop, n1, n2, this%U, this%P, arg)
             do i = 1, n1
                 do j = 1, n2
-                    arg(i, j) = arg(i, j) * this%expg(j)
+                    arg(i, j) = arg(i, j) * exp(this%g_t(t)*this%E(j))
                 enddo
             enddo
             call ZSLGEMM('R', 'C', this%Ndim_hop, n1, n2, this%U, this%P, arg)
@@ -143,11 +143,11 @@ contains
         n1 = size(arg,1)
         n2 = size(arg,2)
         
-        If ( DBLE(log(this%expg(t)) * Conjg(log(this%expg(t)))) > this%Zero ) then
+        If ( DBLE( this%g_t(t) * Conjg(this%g_t(t)) ) > this%Zero ) then
             call ZSLGEMM('R', 'N', this%Ndim_hop, n1, n2, this%U, this%P, arg)
             do i = 1, n1
                 do j = 1, n2
-                    arg(i, j) = arg(i, j) / this%expg(j)
+                    arg(i, j) = arg(i, j) * exp(-this%g_t(t)*this%E(j))
                 enddo
             enddo
             call ZSLGEMM('R', 'C', this%Ndim_hop, n1, n2, this%U, this%P, arg)
@@ -160,16 +160,18 @@ contains
         Complex(kind=kind(0.D0)), intent(inout), dimension(:,:) :: arg
         Integer, intent(in) :: t
         integer :: n1, n2, i, j
+        Complex(kind=kind(0.D0)) :: te
         
         ! taken from mmthr
         n1 = size(arg,1)
         n2 = size(arg,2)
         
-        If ( DBLE(log(this%expg(t)) * Conjg(log(this%expg(t)))) > this%Zero ) then
+        If ( DBLE( this%g_t(t) * Conjg(this%g_t(t)) ) > this%Zero ) then
             call ZSLGEMM('L', 'N', this%Ndim_hop, n1, n2, this%U, this%P, arg)
             do i = 1, n1
+                te = exp(this%g_t(t)*this%E(i))
                 do j = 1, n2
-                    arg(i, j) = arg(i, j) * this%expg(i)
+                    arg(i, j) = arg(i, j) * te
                 enddo
             enddo
             call ZSLGEMM('L', 'C', this%Ndim_hop, n1, n2, this%U, this%P, arg)
@@ -182,15 +184,17 @@ contains
         Complex(kind=kind(0.D0)), intent(inout), dimension(:,:) :: arg
         Integer, intent(in) :: t
         integer :: n1, n2, i, j
+        Complex(kind=kind(0.D0)) :: te
         
         n1 = size(arg,1)
         n2 = size(arg,2)
         
-        If ( DBLE(log(this%expg(t)) * Conjg(log(this%expg(t)))) > this%Zero ) then
+        If ( DBLE( this%g_t(t) * Conjg(this%g_t(t)) ) > this%Zero ) then
             call ZSLGEMM('L', 'N', this%Ndim_hop, n1, n2, this%U, this%P, arg)
             do i = 1, n1
+                te = exp(-this%g_t(t)*this%E(i))
                 do j = 1, n2
-                    arg(i, j) = arg(i, j) / this%expg(i)
+                    arg(i, j) = arg(i, j) * te
                 enddo
             enddo
             call ZSLGEMM('L', 'C', this%Ndim_hop, n1, n2, this%U, this%P, arg)
@@ -211,8 +215,8 @@ contains
         enddo
 
         write (*,*) "------g_t--------"
-        do i = 1, size(this%expg, 1)
-            write (*,*) this%expg(i)
+        do i = 1, size(this%g_t, 1)
+            write (*,*) this%g_t(i)
         enddo
 
     end subroutine
@@ -220,7 +224,7 @@ contains
     subroutine OpT_time_dependent_dealloc(this)
         class(OpT_time_dependent), intent(inout) :: this
         
-        deallocate(this%U, this%E, this%expg, this%P)
+        deallocate(this%U, this%E, this%g_t, this%P)
     end subroutine
 
 end module OpT_time_dependent_mod
