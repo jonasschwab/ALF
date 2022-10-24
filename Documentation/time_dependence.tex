@@ -1,9 +1,10 @@
 % !TEX root = doc.tex
 
-The Hamiltonian can also include an imaginary time dependency.  In that case the partition function is given by 
+The Hamiltonian can also include an imaginary time dependency.  In that case the  imaginary  time  evolution  is given by 
 
 \begin{align}\label{eqn:partition_time}
-    Z  &=   \begin{multlined}[t]   \sum_{C}   e^{-S_0 \left( \left\{ s_{i,\tau} \right\}  \right) }     \left( \prod_{k=1}^{M_V} \prod_{\tau=1}^{L_{\mathrm{Trotter}}} \gamma_{k,\tau} \right) 
+    Z  & \equiv    \begin{multlined}[t]   \Tr{\left( \mathcal{T} e^{-\int_{0}^{\beta} d  \tau  \hat{\mathcal{H}}(\tau) }  \right)}     =   \\
+          \sum_{C}   e^{-S_0 \left( \left\{ s_{i,\tau} \right\}  \right) }     \left( \prod_{k=1}^{M_V} \prod_{\tau=1}^{L_{\mathrm{Trotter}}} \gamma_{k,\tau} \right) 
         e^{ N_{\mathrm{col}}\sum\limits_{s=1}^{N_{\mathrm{fl}}} \sum\limits_{k=1}^{M_V} \sum\limits_{\tau = 1}^{L_{\mathrm{Trotter}}}\sqrt{-\Delta \tau g^{\bm V}_{k,\tau} U_{k}}  \alpha_{k,s} \eta_{k,\tau} }  \\
 \times    \prod_{s=1}^{N_{\mathrm{fl}}}\left[\det\left(  \mathds{1}     + \prod_{\tau=1}^{L_{\mathrm{Trotter}}}   
 	\bm{B}_{\tau}^{(s)}
@@ -21,26 +22,29 @@ In order to recover the partition function of a time independent Hamiltonian, gi
 
 By default a constant coupling strength $g$ is assumed. In order to include an imaginary time dependency for a given operator the array  \texttt{Op\_X\%g\_t(Ltrot)} has to be allocated.
 
-\subparagraph{asymmetric Trotter}
+In thermodynamic  equilibrium,   the   Hamiltonian  is  time   independent,  and  the  imaginary  time  propagation is by   definition  Hermitian.   In this  case,     the   asymmetric  and  symmetric  Trotter  decomposition   differ  by  symmetry:  for   the   symmetric  (asymmetric)  decomposition,  the  imaginary  time  propagator  is  (non-) hermitian.   For  time  dependent  Hamiltonians,  this    distinction  cannot  be  made  since   generically,  
+\begin{equation}
+	 \mathcal{T} e^{-\int_{0}^{\beta} d  \tau  \hat{\mathcal{H}}(\tau) }   \neq   \left( \mathcal{T} e^{-\int_{0}^{\beta} d  \tau  \hat{\mathcal{H}}(\tau) }  \right)^\dagger
+\end{equation}
+
+Nevertheless,   to   guarantee  consistency  with the  rest of  the code,   we    generalize  the  Trotter  decompositions  as  follows. 
+\subparagraph{Asymmetric Trotter}
 \begin{equation}\label{eqn:Green_eq_time}
 G(\sigma,s,\tau| \sigma,s,\tau)  =   \left(  \mathds{1}  +  \prod_{\tau' = 1}^{\tau}  \bm{B}_{\tau'}^{(s)}   \prod_{\tau'= \tau+1}^{L_{\text{Trotter}}}  \bm{B}_{\tau'}^{(s)}   \right)^{-1} = \left( \prod_{\tau' = 1}^{\tau}\bm{B}_{\tau'}^{(s)} \right) G(\sigma,s,0| \sigma,s,0) \left( \prod_{\tau' = 1}^{\tau}\bm{B}_{\tau'}^{(s)} \right)^{-1}
 \end{equation}
-
-
-
+    
 
 \begin{align}
 G(\sigma,s,\tau| \sigma,s,0)  =\left( \prod_{\tau'=1}^{\tau}	\bm{B}_{\tau'}^{(s)} \right) G(\sigma,s,0| \sigma,s,0 )  \\
 G(\sigma,s,0| \sigma,s,\tau)  = 	-(1- G(\sigma,s,0| \sigma,s,0 )) \left( \prod_{\tau'=1}^{\tau}	\bm{B}_{\tau'}^{(s)} \right) ^{-1}
 \end{align}
 
-\subparagraph{symmetric Trotter}
-
+\subparagraph{Symmetric Trotter}
 \begin{equation}
 	\bm{B}_{\tau}^{(s)} =   
-	 e^{- \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,\tau} {\bm T}^{(ks)}} 
+	\prod_{k=M_T}^{1} e^{- \frac{\Delta \tau}{2}  g^{\bm T}_{k,\tau} {\bm T}^{(ks)}} 
     \prod_{k=1}^{M_V}   e^{  \sqrt{ -\Delta \tau g^{\bm V}_{k,\tau} U_{k}} \eta_{k,\tau} {\bm V}^{(ks)} }   \prod_{k=1}^{M_I}   e^{  -\Delta \tau g^{\bm I}_{k,\tau} s_{k,\tau}  {\bm I}^{(ks)}}  
-  e^{- \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,\tau} {\bm T}^{(ks)}} 
+  \prod_{k=1}^{M_T}  e^{- \frac{\Delta \tau}{2} g^{\bm T}_{k,\tau} {\bm T}^{(ks)}} 
 \end{equation}
 
 \begin{align}

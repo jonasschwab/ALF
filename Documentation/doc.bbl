@@ -659,6 +659,13 @@ S.~D{\"u}rr, Z.~Fodor, J.~Frison, C.~Hoelbling, R.~Hoffmann, S.~D. Katz,
 \newblock
   \eprint{http://science.sciencemag.org/content/322/5905/1224.full.pdf}.
 
+\bibitem{Sorella21}
+S.~Sorella,
+\newblock \emph{The phase diagram of the hubbard model by variational auxiliary
+  field quantum monte carlo},
+\newblock arXiv:2101.07045  (2021),
+\newblock \doi{10.48550/ARXIV.2101.07045}.
+
 \bibitem{Assaad02}
 F.~F. Assaad,
 \newblock \emph{Quantum monte carlo methods on lattices: The determinantal
