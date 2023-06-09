@@ -29,153 +29,132 @@ stages:
 #      - ALF_data
 #    when: always
 #    expire_in: 1 week
+
+.compile_template:
+  stage: compile
+  script:
+    - if [ ! -O . ]; then sudo chown -R "$(id -u)" .; fi
+    - git clone https://git.physik.uni-wuerzburg.de/ALF/pyALF.git
+    - export PYTHONPATH="$PWD/pyALF:$PYTHONPATH"
+    - export PATH="$PWD/pyALF/py_alf/cli:$PATH"
+    - export ALF_DIR="$PWD"
+    - . ./configure.sh $MACHINE noMPI HDF5 NO-INTERACTIVE
+    - alf_test_branch.py
+      --sim_pars $ALF_DIR/testsuite/test_branch_parameters.json
+      --machine $MACHINE
+      --mpi
+      --branch_T $CI_COMMIT_BRANCH
+      --branch_R master
+      --devel
+      --no_sim
+      --no_analyze
+    - rdfind -minsize 100000 -makesymlinks true ALF_data
+    - symlinks -c ALF_data
+  artifacts:
+    paths:
+      - ALF_data
+  cache:
+    key: HDF5-$MACHINE
+    untracked: true
+    paths:
+      - HDF5
+    policy: pull
+
+.simulation_template:
+  stage: simulation
+  script:
+    - if [ ! -O . ]; then sudo chown -R "$(id -u)" .; fi
+    - START_DIR=$PWD
+    - git clone https://git.physik.uni-wuerzburg.de/ALF/pyALF.git
+    - export PYTHONPATH="$PWD/pyALF:$PYTHONPATH"
+    - cd ${START_DIR}/ALF_data/${TEST_NAME}
+    - mpiexec -n 4 ./ALF.out
+    - cd ${START_DIR}/ALF_data/${TEST_NAME}_test
+    - mpiexec -n 4 ./ALF.out
+    - ${START_DIR}/testsuite/compare_dirs.py
+      --results ${START_DIR}/ALF_data/${TEST_NAME}.txt
+      ${START_DIR}/ALF_data/${TEST_NAME}
+      ${START_DIR}/ALF_data/${TEST_NAME}_test
+  artifacts:
+    paths:
+      - ALF_data/${TEST_NAME}
+      - ALF_data/${TEST_NAME}_test
+      - ALF_data/${TEST_NAME}.txt
+    exclude:
+      - ALF_data/${TEST_NAME}/**/confout_*.h5
+      - ALF_data/${TEST_NAME}/**/ALF.out
+      - ALF_data/${TEST_NAME}_test/**/confout_*.h5
+      - ALF_data/${TEST_NAME}_test/**/ALF.out
+    when: always
+    expire_in: 1 week
+
+.analysis_template:
+  stage: analyze
+  script:
+    - if [ ! -O . ]; then sudo chown -R "$(id -u)" .; fi
+    - git clone https://git.physik.uni-wuerzburg.de/ALF/pyALF.git
+    - export PYTHONPATH="$PWD/pyALF:$PYTHONPATH"
+    - export PATH="$PWD/pyALF/py_alf/cli:$PATH"
+    - export ALF_DIR="$PWD"
+    - alf_test_branch.py
+      --sim_pars $ALF_DIR/testsuite/test_branch_parameters.json
+      --machine $MACHINE
+      --mpi
+      --branch_T $CI_COMMIT_BRANCH
+      --branch_R master
+      --devel
+      --no_prep
+      --no_sim
+  artifacts:
+    paths:
+      - ALF_data
+      - test.txt
+    exclude:
+      - ALF_data/**/res
+    when: always
+    expire_in: 1 week
 """, yaml.Loader)
 
 
-COMPILE_TEMPLATE = yaml.load("""
-stage: compile
-script:
-  - if [ ! -O . ]; then sudo chown -R "$(id -u)" .; fi
-  - git clone https://git.physik.uni-wuerzburg.de/ALF/pyALF.git
-  - export PYTHONPATH="$PWD/pyALF:$PYTHONPATH"
-  - export PATH="$PWD/pyALF/py_alf/cli:$PATH"
-  - export ALF_DIR="$PWD"
-  - . ./configure.sh $MACHINE noMPI HDF5 NO-INTERACTIVE
-  - alf_test_branch.py
-    --sim_pars $ALF_DIR/testsuite/test_branch_parameters.json
-    --machine $MACHINE
-    --mpi
-    --branch_T $CI_COMMIT_BRANCH
-    --branch_R master
-    --devel
-    --no_sim
-    --no_analyze
-  - rdfind -minsize 100000 -makesymlinks true ALF_data
-  - symlinks -c ALF_data
-artifacts:
-  paths:
-    - ALF_data
-""", yaml.Loader)
-
-
-SIMULATION_TEMPLATE = yaml.load("""
-stage: simulation
-script:
-  - if [ ! -O . ]; then sudo chown -R "$(id -u)" .; fi
-  - START_DIR=$PWD
-  - git clone https://git.physik.uni-wuerzburg.de/ALF/pyALF.git
-  - export PYTHONPATH="$PWD/pyALF:$PYTHONPATH"
-  - cd ${START_DIR}/${TEST_DIR1}
-  - mpiexec -n 4 ./ALF.out
-  - cd ${START_DIR}/${TEST_DIR2}
-  - mpiexec -n 4 ./ALF.out
-  - ${START_DIR}/testsuite/compare_dirs.py
-    --results ${START_DIR}/ALF_data/${TEST_NAME}.txt
-    ${START_DIR}/${TEST_DIR1}
-    ${START_DIR}/${TEST_DIR2}
-artifacts:
-  paths:
-    - ${TEST_DIR1}
-    - ${TEST_DIR2}
-    - ALF_data/${TEST_NAME}.txt
-  exclude:
-    - ${TEST_DIR1}/**/confout_*.h5
-    - ${TEST_DIR1}/**/ALF.out
-    - ${TEST_DIR2}/**/confout_*.h5
-    - ${TEST_DIR2}/**/ALF.out
-  when: always
-  expire_in: 1 week
-""", yaml.Loader)
-
-
-ANALYSIS_TEMPLATE = yaml.load("""
-stage: analyze
-script:
-  - if [ ! -O . ]; then sudo chown -R "$(id -u)" .; fi
-  - git clone https://git.physik.uni-wuerzburg.de/ALF/pyALF.git
-  - export PYTHONPATH="$PWD/pyALF:$PYTHONPATH"
-  - export PATH="$PWD/pyALF/py_alf/cli:$PATH"
-  - export ALF_DIR="$PWD"
-  - alf_test_branch.py \
-    --sim_pars $ALF_DIR/testsuite/test_branch_parameters.json \
-    --machine $MACHINE \
-    --mpi \
-    --branch_T $CI_COMMIT_BRANCH \
-    --branch_R master \
-    --devel \
-    --no_prep \
-    --no_sim
-artifacts:
-  paths:
-    - ALF_data
-    - test.txt
-  exclude:
-    - ALF_data/**/res
-  when: always
-  expire_in: 1 week
-""", yaml.Loader)
-
-
-IMAGES = yaml.load("""
+ENVIRONMENTS = yaml.load("""
 Bullseye:
     image: git.physik.uni-wuerzburg.de:25812/alf/alf_docker/pyalf-requirements/bullseye
-    machine: GNU
+    variables: {MACHINE: GNU}
 Bookworm:
     image: git.physik.uni-wuerzburg.de:25812/alf/alf_docker/pyalf-requirements/bookworm
-    machine: GNU
+    variables: {MACHINE: GNU}
 #Intel21:
 #    image: git.physik.uni-wuerzburg.de:25812/alf/alf_docker/pyalf-requirements/bullseye-intel
-#    machine: INTEL
+#    variables: {MACHINE: INTEL}
 IntelLatest:
     image: git.physik.uni-wuerzburg.de:25812/alf/alf_docker/pyalf-requirements/intel
-    machine: INTEL
+    variables: {MACHINE: INTEL}
 IntelLLVMLatest:
     image: git.physik.uni-wuerzburg.de:25812/alf/alf_docker/pyalf-requirements/intel
-    machine: IntelLLVM
+    variables: {MACHINE: INTELLLVM}
 PGI-21-03:
     image: git.physik.uni-wuerzburg.de:25812/alf/alf_docker/pyalf-requirements/bullseye-pgi-21-03
-    machine: PGI
+    variables: {MACHINE: PGI}
 macGNU:
-    machine: GNU
+    tags: ['macos']
+    variables: {MACHINE: GNU}
 """, yaml.Loader)
 
 
-def prep_runs(test_specs, image_name, image):
-    try:
-        env_spec = {'image': image['image']}
-    except KeyError:
-        # No image -> Assume running on MAC
-        env_spec = {'tags': ['macos']}
-    env_spec['variables'] = {'MACHINE': image['machine']}
-
-    jobname_compile = f'{image_name}_compile'
+def prep_runs(test_specs, env_name, env_spec):
+    jobname_compile = f'{env_name}_compile'
     pipeline_config[jobname_compile] = {
+        **{'extends': '.compile_template'},
         **copy.deepcopy(env_spec),
-        **COMPILE_TEMPLATE,
     }
 
-    analysis_needs = []
-    for test_name in test_specs:
-        jobname=f'{image_name}_{test_name}_run'
-        env_spec['variables'] = {
-            'TEST_NAME': test_name,
-            'TEST_DIR1': f"ALF_data/{test_name}",
-            'TEST_DIR2': f"ALF_data/{test_name}_test"}
-        analysis_needs.append(jobname)
-        pipeline_config[jobname] = {
-            **copy.deepcopy(env_spec),
-            'needs': [jobname_compile],
-            **SIMULATION_TEMPLATE,
-        }
-
-    # env_spec['variables'] = {'MACHINE': image['machine']}
-    # jobname_analyze = f'{image_name}_analyze'
-    # pipeline_config[jobname_analyze] = {
-    #     **copy.deepcopy(env_spec),
-    #     'needs': analysis_needs,
-    #     **ANALYSIS_TEMPLATE,
-    # }
-
+    pipeline_config[f'{env_name}_run'] = {
+        **{'extends': '.simulation_template'},
+        **copy.deepcopy(env_spec),
+        'needs': [jobname_compile],
+        'parallel': {'matrix':
+                     [{'TEST_NAME': list(test_specs)}]}
+    }
 
 if __name__ == "__main__":
     try:
@@ -186,8 +165,8 @@ if __name__ == "__main__":
     with open(specs_file, 'r', encoding='UTF-8') as f:
         test_specs = json.load(f)
 
-    for image_name, image in IMAGES.items():
-        prep_runs(test_specs, image_name, image)
+    for env_name, env_spec in ENVIRONMENTS.items():
+        prep_runs(test_specs, env_name, env_spec)
 
     with open('generated-config.yml', 'w', encoding='UTF-8') as f:
         f.write(yaml.dump(pipeline_config))
