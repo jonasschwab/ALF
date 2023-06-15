@@ -700,7 +700,8 @@
               this(nf)%N_bonds = N_bonds
               Allocate (this(nf)%List(this(nf)%N_bonds,4), &
                    &    this(nf)%T(this(nf)%N_bonds) )
-              nc = 1
+              nc = 0
+              nc = nc + 1
               this(nf)%T(nc)    = cmplx(-Ham_T1_vec(nf),0.d0,kind(0.d0))
               this(nf)%List(nc,1) = 1
               this(nf)%List(nc,2) = 1
@@ -708,7 +709,7 @@
               this(nf)%List(nc,4) = 0
               
               If (abs(Ham_Tperp_max) > Zero ) Then
-                 nc = 2
+                 nc = nc + 1
                  this(nf)%T(nc)    = cmplx(-Ham_Tperp_vec(nf),0.d0,kind(0.d0))
                  this(nf)%List(nc,1) = 1
                  this(nf)%List(nc,2) = 2
@@ -717,7 +718,7 @@
               endif
               
               If (abs(Ham_T2_max) > Zero ) Then
-                 nc = 3
+                 nc = nc + 1
                  this(nf)%T(nc)    = cmplx(-Ham_T2_vec(nf),0.d0,kind(0.d0))
                  this(nf)%List(nc,1) = 2
                  this(nf)%List(nc,2) = 2
@@ -769,7 +770,7 @@
                  If (Abs(Ham_T2_max) > Zero) then
                     this(1)%L_Fam(Nf) = this(1)%L_Fam(Nf) + 1
                     this(1)%List_Fam(Nf,this(1)%L_Fam(Nf),1) = I ! Unit cell
-                    this(1)%List_Fam(Nf,this(1)%L_Fam(Nf),2) = 3 ! The bond (See above)
+                    this(1)%List_Fam(Nf,this(1)%L_Fam(Nf),2) = 2 + No_Shift ! The bond (See above)
                  endif
               else
                  Nf = 2
@@ -779,7 +780,7 @@
                  If (Abs(Ham_T2_max) > Zero) then
                     this(1)%L_Fam(Nf) = this(1)%L_Fam(Nf) + 1
                     this(1)%List_Fam(Nf,this(1)%L_Fam(Nf),1) = I ! Unit cell
-                    this(1)%List_Fam(Nf,this(1)%L_Fam(Nf),2) = 3 ! The bond (See above)
+                    this(1)%List_Fam(Nf,this(1)%L_Fam(Nf),2) = 2 + No_Shift ! The bond (See above)
                  endif
               endif
               If (Abs(Ham_Tperp_max) > Zero) then
