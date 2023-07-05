@@ -355,6 +355,9 @@ Program Main
         Call Alloc_Ham()
         leap_frog_bulk = .false.
         Call ham%Ham_set()
+        ! Check   array  size  for time dependent Hamiltonians
+        !!!   TODO 
+        ! 
 
         ! Test if user has initialized Calc_FL array
         If ( .not. allocated(Calc_Fl)) then
@@ -432,6 +435,7 @@ Program Main
         Do n = 1,N_op
            nsigma%t(n)  = OP_V(n,1)%type
         Enddo
+           
         File_seeds="seeds"
         Call Set_Random_number_Generator(File_seeds,Seed_in)
         !Write(6,*) Seed_in

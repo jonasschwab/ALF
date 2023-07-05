@@ -163,6 +163,7 @@
       real(Kind=Kind(0.d0)) :: Dtau     = 0.1d0     ! Thereby Ltrot=Beta/dtau
       real(Kind=Kind(0.d0)) :: Beta     = 5.d0      ! Inverse temperature
       !logical              :: Projector= .false.   ! Whether the projective algorithm is used
+      logical               :: Adiabatic= .false.   ! If  true,  and projector  true then adiabatic  switching on of  U. 
       real(Kind=Kind(0.d0)) :: Theta    = 10.d0     ! Projection parameter
       !logical              :: Symm     = .true.    ! Whether symmetrization takes place
       Integer               :: N_part   = -1        ! Number of particles in trial wave function. If N_part < 0 -> N_part = L1*L2/2
@@ -432,7 +433,7 @@
           Use Predefined_Int
           Implicit none
 
-          Integer :: nf, I
+          Integer :: nf, I, nt
           Real (Kind=Kind(0.d0)) :: X
 
 
@@ -444,18 +445,29 @@
              enddo
           enddo
 
+          
+          
           Do nf = 1,N_FL
              X = 1.d0
              if (nf == 2)  X = -1.d0
              Do i = 1,Ndim
                 Op_V(i,nf)%P(1)   = I
                 Op_V(i,nf)%O(1,1) = cmplx(1.d0, 0.d0, kind(0.D0))
-                Op_V(i,nf)%g      = X*SQRT(CMPLX(DTAU*ham_U/2.d0, 0.D0, kind(0.D0)))
+                If  (Adiabatic)   then 
+                   Allocate(OP_V(i,nf)%g_t(Ltrot))
+                   do  nt = 1,Ltrot 
+                      Op_V(i,nf)%g_t(nt)  = X*SQRT(CMPLX(DTAU*ham_U/2.d0, 0.D0, kind(0.D0)))
+                   enddo
+                else
+                   Op_V(i,nf)%g      = X*SQRT(CMPLX(DTAU*ham_U/2.d0, 0.D0, kind(0.D0)))
+                endif
                 Op_V(i,nf)%alpha  = cmplx(-0.5d0, 0.d0, kind(0.D0))
                 Op_V(i,nf)%type   = 2
                 Call Op_set( Op_V(i,nf) )
              Enddo
           Enddo
+
+          
 
 
         end Subroutine Ham_V
