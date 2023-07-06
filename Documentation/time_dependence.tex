@@ -27,7 +27,49 @@ In thermodynamic  equilibrium,   the   Hamiltonian  is  time   independent,  and
 	 \mathcal{T} e^{-\int_{0}^{\beta} d  \tau  \hat{\mathcal{H}}(\tau) }   \neq   \left( \mathcal{T} e^{-\int_{0}^{\beta} d  \tau  \hat{\mathcal{H}}(\tau) }  \right)^\dagger
 \end{equation}
 
-Nevertheless,   to   guarantee  consistency  with the  rest of  the code,   we    generalize  the  Trotter  decompositions  as  follows. 
+Nevertheless,   to   guarantee  consistency  with the  rest of  the code,   we    generalize  the  Trotter  decompositions  presented in  Sec.~\ref{sec:trotter}  as  follows.   The  operators   $\hat{T}_{i} $   and  $\hat{O}_{i} $   defined  in  Eq.~\eqref{Checkerboard.Eq}   
+and   \eqref{Checkerboard_V.Eq}   acquire  an   imaginary  time index that  encodes  the time  dependence of the coupling  constants   as  explicitly  shown above.      Since we only allow  for a  time variation of the  coupling constants,   the   very same  Trotter  decomposition that we  use  to  define 
+$\hat{T}_{i} $      can be  used  to     for  time  dependent  problems. 
+
+\noindent
+\subparagraph{Asymmetric Trotter} 
+The asymmetric  Trotter   decomposition,    estimates  the   imaginary time propagation  as 
+\begin{equation}
+  \hat{U}_{\text{Approx}}  =  \prod_{\tau=1}^{L_\text{Trotter}} \left(\prod_{i=1}^{N_O} e^{-\Delta \tau \hat{O}_{i,\tau}} \prod_{j=1}^{N_T} e^{-\Delta \tau \hat{T}_{j,\tau}}  \right).
+  \end{equation}
+
+
+\noindent
+\subparagraph{Asymmetric Trotter} 
+For  the asymmetric  Trotter,   we  use
+\begin{align}
+\label{eq:f_approx_symm_T} 
+\hat{U}_{\text{Approx} }  &=  
+\begin{aligned}[t]
+    \prod_{\tau=1}^{L_{\text{Trotter}}} &\left[ \left(\prod_{j=1}^{N_T-1} e^{-\frac{\Delta \tau}{4} \hat{T}_{j,\tau} } \right)    e^{-\frac{\Delta \tau}{2} \hat{T}_{N_T,\tau} } \;   
+   \left(  \prod_{j=N_T-1}^{1} e^{-\frac{\Delta \tau}{4} \hat{T}_{j,\tau} } \right)  \times   \right. \nonumber \\   
+   &\;\;\left(\prod_{i=1\phantom{N_O}}^{N_O-1} e^{-\frac{\Delta \tau}{2} \hat{O}_{i,\tau} } \right)    e^{-\Delta \tau \hat{O}_{N_O,\tau} }    
+     \left( \prod_{i=N_O-1}^{1} e^{-\frac{\Delta \tau}{2} \hat{O}_{i,\tau} } \right)  \times  \nonumber  \\
+   &\;\;\left.   \left(\prod_{j=1}^{N_T-1} e^{-\frac{\Delta \tau}{4} \hat{T}_{j,\tau} } \right)    e^{-\frac{\Delta \tau}{2} \hat{T}_{N_T,\tau} }  \;  
+   \left(  \prod_{j=N_T-1}^{1} e^{-\frac{\Delta \tau}{4} \hat{T}_{j,\tau} } \right)   
+   \right] 
+   \end{aligned}
+\end{align}
+As  for  the   imaginary  time independent  Hamiltonians,  we  save  computational  resources  by  approximating: 
+\begin{align}
+  & \left(\prod_{j=1}^{N_T-1} e^{-\frac{\Delta \tau}{4} \hat{T}_{j,\tau+1} } \right)    e^{-\frac{\Delta \tau}{2} \hat{T}_{N_T,\tau+1} }  \;  
+   \left(  \prod_{j=N_T-1}^{1} e^{-\frac{\Delta \tau}{4} \hat{T}_{j,\tau+1} } \right)    
+    \left(\prod_{j=1}^{N_T-1} e^{-\frac{\Delta \tau}{4} \hat{T}_{j,\tau} } \right)    e^{-\frac{\Delta \tau}{2} \hat{T}_{N_T,\tau} }  \;  
+   \left(  \prod_{j=N_T-1}^{1} e^{-\frac{\Delta \tau}{4} \hat{T}_{j,\tau} } \right)       \simeq  \nonumber  \\
+    & \left(\prod_{j=1}^{N_T-1} e^{-\frac{\Delta \tau}{4} ( \hat{T}_{j,\tau+1}  +  \hat{T}_{j,\tau} )} \right)    e^{-\frac{\Delta \tau}{2} ( \hat{T}_{N_T,\tau+1} 
+     +  \hat{T}_{N_T,\tau}  ) }  \;  
+   \left(  \prod_{j=N_T-1}^{1} e^{-\frac{\Delta \tau}{4} ( \hat{T}_{j,\tau+1}  +  \hat{T}_{j,\tau} ) } \right)    
+\end{align}
+
+
+
+
+
 \subparagraph{Asymmetric Trotter}
 \begin{equation}\label{eqn:Green_eq_time}
 G(\sigma,s,\tau| \sigma,s,\tau)  =   \left(  \mathds{1}  +  \prod_{\tau' = 1}^{\tau}  \bm{B}_{\tau'}^{(s)}   \prod_{\tau'= \tau+1}^{L_{\text{Trotter}}}  \bm{B}_{\tau'}^{(s)}   \right)^{-1} = \left( \prod_{\tau' = 1}^{\tau}\bm{B}_{\tau'}^{(s)} \right) G(\sigma,s,0| \sigma,s,0) \left( \prod_{\tau' = 1}^{\tau}\bm{B}_{\tau'}^{(s)} \right)^{-1}
