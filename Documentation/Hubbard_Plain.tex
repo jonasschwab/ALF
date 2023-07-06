@@ -66,6 +66,10 @@ real(Kind=Kind(0.d0)) :: Ham_U    = 4.d0     ! Hubbard interaction
 real(Kind=Kind(0.d0)) :: Dtau     = 0.1d0    ! Thereby Ltrot=Beta/dtau
 real(Kind=Kind(0.d0)) :: Beta     = 5.d0     ! Inverse temperature
 !logical              :: Projector = .false. ! Whether the projective algorithm is used
+logical               :: Adiabatic = .false. ! If  true  and  if  the  projector is true  
+                                             ! the  Hubbard interaction  will be  ramped 
+                                             ! from  0 to Ham_U  in the  time interval 
+                                             ! 0  to  theta
 real(Kind=Kind(0.d0)) :: Theta    = 5.d0     ! Projection parameter
 !logical              :: Symm = .false.      ! Whether symmetrization takes place
 Integer               :: N_part   = -1       ! Number of particles in trial wave function.
@@ -177,9 +181,18 @@ Do nf = 1,N_FL
    Enddo
 Enddo
 \end{lstlisting}
+\fa{Update  the code  once   it has  been implemented}
 The code above makes it explicit that there is a sign difference between the coupling of the HS field in the two flavor sectors.        Hence,  
-\texttt{Op\_V(i,nf)}     encodes    $ e^{  X \sqrt{\Delta   \tau U/2} \left( \hat{c}^{\dagger}_{\ve{i},{\texttt{nf}}}  \hat{c}^{\phantom\dagger}_{\ve{i},{\texttt{nf}}}  + \alpha  \right) }  $    with  $X=1 $  for  $\texttt{nf}=1$  and $X=-1 $  for  $\texttt{nf}=2$.    Strictly  speaking  $X$  can  be  omitted.  However,  it  is  required  when  using the  flavor  symmetry  option in the presence  of  particle-hole  symmetry (see  Sec.~\ref{sec:flavor_sym}). 
+\texttt{Op\_V(i,nf)}     encodes    $ e^{  X \sqrt{\Delta   \tau U/2} \left( \hat{c}^{\dagger}_{\ve{i},{\texttt{nf}}}  \hat{c}^{\phantom\dagger}_{\ve{i},{\texttt{nf}}}  + \alpha  \right) }  $    with  $X=1 $  for  $\texttt{nf}=1$  and $X=-1 $  for  $\texttt{nf}=2$.    Strictly  speaking  $X$  can  be  omitted.  However,  it  is  required  when  using the  flavor  symmetry  option in the presence  of  particle-hole  symmetry (see  Sec.~\ref{sec:flavor_sym}).     If  the  variable  
+\texttt{Adiabatic=.true.}     and  \texttt{Projector=.true.}   then the   imaginary time    profile  of  the  Hubbard interaction  is  given by   Fig.~\ref{U_profile.fig}
+\begin{figure}
+\center 
+\includegraphics[width=0.6\textwidth]{U_profile.pdf}
 
+        \caption{Protocol  for   wrapping  up  the  Hubbard  U-term  for   in  the  projective  algorithm. This approach  has  been  put  forward as  a
+         method  to  alleviate  the negative sign problem   \cite{Vaezi21}.    }
+        \label{U_profile.fig}
+\end{figure}
 
 %------------------------------------------------------------
 \subsection{The trial wave function: \texttt{Ham\_Trial}} \label{U_PV_Ham_Trial}

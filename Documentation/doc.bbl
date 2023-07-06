@@ -1016,6 +1016,13 @@ M.~Bercx, T.~C. Lang and F.~F. Assaad,
 \newblock Phys. Rev. B \textbf{80}, 045412 (2009),
 \newblock \doi{10.1103/PhysRevB.80.045412}.
 
+\bibitem{Vaezi21}
+M.-S. Vaezi, A.-R. Negari, A.~Moharramipour and A.~Vaezi,
+\newblock \emph{Amelioration for the sign problem: An adiabatic quantum monte
+  carlo algorithm},
+\newblock Phys. Rev. Lett. \textbf{127}, 217003 (2021),
+\newblock \doi{10.1103/PhysRevLett.127.217003}.
+
 \bibitem{Parola91}
 A.~Parola, S.~Sorella, M.~Parrinello and E.~Tosatti,
 \newblock \emph{d-wave, dimer, and chiral states in the two-dimensional hubbard
