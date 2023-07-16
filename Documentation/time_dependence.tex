@@ -32,7 +32,7 @@ and   \eqref{Checkerboard_V.Eq}   acquire  an   imaginary  time index that  enco
 $\hat{T}_{i} $      can be  used  to     for  time  dependent  problems. 
 
 \noindent
-\subparagraph{Asymmetric Trotter} 
+\textbf{Asymmetric Trotter} 
 The asymmetric  Trotter   decomposition,    estimates  the   imaginary time propagation  as 
 \begin{equation}
   \hat{U}_{\text{Approx}}  =  \prod_{\tau=1}^{L_\text{Trotter}} \left(\prod_{i=1}^{N_O} e^{-\Delta \tau \hat{O}_{i,\tau}} \prod_{j=1}^{N_T} e^{-\Delta \tau \hat{T}_{j,\tau}}  \right).
@@ -40,7 +40,7 @@ The asymmetric  Trotter   decomposition,    estimates  the   imaginary time prop
 
 
 \noindent
-\subparagraph{Symmetric Trotter} 
+\textbf{Symmetric Trotter} 
 For  the symmetric  Trotter,   we  use
 \begin{align}
 \label{eq:f_approx_symm_T} 
@@ -66,47 +66,47 @@ As  for  the   imaginary  time independent  Hamiltonians,  we  save  computation
    \left(  \prod_{j=N_T-1}^{1} e^{-\frac{\Delta \tau}{4} ( \hat{T}_{j,\tau+1}  +  \hat{T}_{j,\tau} ) } \right)    
 \end{align}
 
-
-
-\fa{I  would  skip things  from here  to  }
-
-\subparagraph{Asymmetric Trotter}
-\begin{equation}\label{eqn:Green_eq_time}
-G(\sigma,s,\tau| \sigma,s,\tau)  =   \left(  \mathds{1}  +  \prod_{\tau' = 1}^{\tau}  \bm{B}_{\tau'}^{(s)}   \prod_{\tau'= \tau+1}^{L_{\text{Trotter}}}  \bm{B}_{\tau'}^{(s)}   \right)^{-1} = \left( \prod_{\tau' = 1}^{\tau}\bm{B}_{\tau'}^{(s)} \right) G(\sigma,s,0| \sigma,s,0) \left( \prod_{\tau' = 1}^{\tau}\bm{B}_{\tau'}^{(s)} \right)^{-1}
-\end{equation}
-    
-
-\begin{align}
-G(\sigma,s,\tau| \sigma,s,0)  =\left( \prod_{\tau'=1}^{\tau}	\bm{B}_{\tau'}^{(s)} \right) G(\sigma,s,0| \sigma,s,0 )  \\
-G(\sigma,s,0| \sigma,s,\tau)  = 	-(1- G(\sigma,s,0| \sigma,s,0 )) \left( \prod_{\tau'=1}^{\tau}	\bm{B}_{\tau'}^{(s)} \right) ^{-1}
-\end{align}
-
-\subparagraph{Symmetric Trotter}
-\begin{equation}
-	\bm{B}_{\tau}^{(s)} =   
-	\prod_{k=M_T}^{1} e^{- \frac{\Delta \tau}{2}  g^{\bm T}_{k,\tau} {\bm T}^{(ks)}} 
-    \prod_{k=1}^{M_V}   e^{  \sqrt{ -\Delta \tau g^{\bm V}_{k,\tau} U_{k}} \eta_{k,\tau} {\bm V}^{(ks)} }   \prod_{k=1}^{M_I}   e^{  -\Delta \tau g^{\bm I}_{k,\tau} s_{k,\tau}  {\bm I}^{(ks)}}  
-  \prod_{k=1}^{M_T}  e^{- \frac{\Delta \tau}{2} g^{\bm T}_{k,\tau} {\bm T}^{(ks)}} 
-\end{equation}
-
-\begin{align}
-\prod_{\tau=\tau_1}^{\tau_2}   
-	\bm{B}_{\tau}^{(s)} = 
-	 e^{- \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,\tau_2} {\bm T}^{(ks)}} 
-	 \prod_{\tau=\tau_1}^{\tau_2}  \left(    \prod_{k=1}^{M_V}   e^{  \sqrt{ -\Delta \tau g^{\bm V}_{k,\tau} U_{k}} \eta_{k,\tau} {\bm V}^{(ks)} }  \right. \\ 
-\left.	 \times \prod_{k=1}^{M_I}   e^{  -\Delta \tau g^{\bm I}_{k,\tau} s_{k,\tau}  {\bm I}^{(ks)}}  
-	 e^{- \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} (g^{\bm T}_{k,\tau}+g^{\bm T}_{k,\tau-1}) {\bm T}^{(ks)}} \right)
-	  e^{ \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,\tau_1-1} {\bm T}^{(ks)}} 
-\end{align}
-
-
-\begin{equation}
-G_{\mathrm{s}}(\sigma,s,\tau| \sigma,s,\tau)   =   e^{- \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,\tau} {\bm T}^{(ks)}}  G_{\mathrm{ns}}(\sigma,s,\tau| \sigma,s,\tau)  e^{ \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,\tau} {\bm T}^{(ks)}} 
-\end{equation}
-
-\begin{align}
-G_{\mathrm{s}}(\sigma,s,\tau| \sigma,s,0)  =  e^{- \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,\tau} {\bm T}^{(ks)}}   G_{\mathrm{ns}}(\sigma,s,\tau| \sigma,s,0)  e^{ \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,L_{\text{Trotter}}} {\bm T}^{(ks)}}   \\
-G_{\mathrm{s}}(\sigma,s,0| \sigma,s,\tau)  = e^{- \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,L_{\text{Trotter}}} {\bm T}^{(ks)}} 	G_{\mathrm{ns}}(\sigma,s,0| \sigma,s,\tau) e^{ \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,\tau} {\bm T}^{(ks)}} 
-\end{align}
-
-\fa{to here.}
+%
+%
+%\fa{I  would  skip things  from here  to  }
+%
+%\subparagraph{Asymmetric Trotter}
+%\begin{equation}\label{eqn:Green_eq_time}
+%G(\sigma,s,\tau| \sigma,s,\tau)  =   \left(  \mathds{1}  +  \prod_{\tau' = 1}^{\tau}  \bm{B}_{\tau'}^{(s)}   \prod_{\tau'= \tau+1}^{L_{\text{Trotter}}}  \bm{B}_{\tau'}^{(s)}   \right)^{-1} = \left( \prod_{\tau' = 1}^{\tau}\bm{B}_{\tau'}^{(s)} \right) G(\sigma,s,0| \sigma,s,0) \left( \prod_{\tau' = 1}^{\tau}\bm{B}_{\tau'}^{(s)} \right)^{-1}
+%\end{equation}
+%    
+%
+%\begin{align}
+%G(\sigma,s,\tau| \sigma,s,0)  =\left( \prod_{\tau'=1}^{\tau}	\bm{B}_{\tau'}^{(s)} \right) G(\sigma,s,0| \sigma,s,0 )  \\
+%G(\sigma,s,0| \sigma,s,\tau)  = 	-(1- G(\sigma,s,0| \sigma,s,0 )) \left( \prod_{\tau'=1}^{\tau}	\bm{B}_{\tau'}^{(s)} \right) ^{-1}
+%\end{align}
+%
+%\subparagraph{Symmetric Trotter}
+%\begin{equation}
+%	\bm{B}_{\tau}^{(s)} =   
+%	\prod_{k=M_T}^{1} e^{- \frac{\Delta \tau}{2}  g^{\bm T}_{k,\tau} {\bm T}^{(ks)}} 
+%    \prod_{k=1}^{M_V}   e^{  \sqrt{ -\Delta \tau g^{\bm V}_{k,\tau} U_{k}} \eta_{k,\tau} {\bm V}^{(ks)} }   \prod_{k=1}^{M_I}   e^{  -\Delta \tau g^{\bm I}_{k,\tau} s_{k,\tau}  {\bm I}^{(ks)}}  
+%  \prod_{k=1}^{M_T}  e^{- \frac{\Delta \tau}{2} g^{\bm T}_{k,\tau} {\bm T}^{(ks)}} 
+%\end{equation}
+%
+%\begin{align}
+%\prod_{\tau=\tau_1}^{\tau_2}   
+%	\bm{B}_{\tau}^{(s)} = 
+%	 e^{- \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,\tau_2} {\bm T}^{(ks)}} 
+%	 \prod_{\tau=\tau_1}^{\tau_2}  \left(    \prod_{k=1}^{M_V}   e^{  \sqrt{ -\Delta \tau g^{\bm V}_{k,\tau} U_{k}} \eta_{k,\tau} {\bm V}^{(ks)} }  \right. \\ 
+%\left.	 \times \prod_{k=1}^{M_I}   e^{  -\Delta \tau g^{\bm I}_{k,\tau} s_{k,\tau}  {\bm I}^{(ks)}}  
+%	 e^{- \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} (g^{\bm T}_{k,\tau}+g^{\bm T}_{k,\tau-1}) {\bm T}^{(ks)}} \right)
+%	  e^{ \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,\tau_1-1} {\bm T}^{(ks)}} 
+%\end{align}
+%
+%
+%\begin{equation}
+%G_{\mathrm{s}}(\sigma,s,\tau| \sigma,s,\tau)   =   e^{- \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,\tau} {\bm T}^{(ks)}}  G_{\mathrm{ns}}(\sigma,s,\tau| \sigma,s,\tau)  e^{ \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,\tau} {\bm T}^{(ks)}} 
+%\end{equation}
+%
+%\begin{align}
+%G_{\mathrm{s}}(\sigma,s,\tau| \sigma,s,0)  =  e^{- \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,\tau} {\bm T}^{(ks)}}   G_{\mathrm{ns}}(\sigma,s,\tau| \sigma,s,0)  e^{ \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,L_{\text{Trotter}}} {\bm T}^{(ks)}}   \\
+%G_{\mathrm{s}}(\sigma,s,0| \sigma,s,\tau)  = e^{- \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,L_{\text{Trotter}}} {\bm T}^{(ks)}} 	G_{\mathrm{ns}}(\sigma,s,0| \sigma,s,\tau) e^{ \frac{\Delta \tau}{2} \sum_{k=1}^{M_T} g^{\bm T}_{k,\tau} {\bm T}^{(ks)}} 
+%\end{align}
+%
+%\fa{to here.}
