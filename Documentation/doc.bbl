@@ -1001,6 +1001,13 @@ M.~B. {Thompson},
 \newblock arXiv:1011.0175  (2010),
 \newblock \eprint{https://arxiv.org/abs/1011.0175}.
 
+\bibitem{Parola91}
+A.~Parola, S.~Sorella, M.~Parrinello and E.~Tosatti,
+\newblock \emph{d-wave, dimer, and chiral states in the two-dimensional hubbard
+  model},
+\newblock Phys. Rev. B \textbf{43}, 6190 (1991),
+\newblock \doi{10.1103/PhysRevB.43.6190}.
+
 \bibitem{Milat04}
 I.~Milat, F.~Assaad and M.~Sigrist,
 \newblock \emph{Field induced magnetic ordering transition in kondo
@@ -1022,13 +1029,6 @@ M.-S. Vaezi, A.-R. Negari, A.~Moharramipour and A.~Vaezi,
   carlo algorithm},
 \newblock Phys. Rev. Lett. \textbf{127}, 217003 (2021),
 \newblock \doi{10.1103/PhysRevLett.127.217003}.
-
-\bibitem{Parola91}
-A.~Parola, S.~Sorella, M.~Parrinello and E.~Tosatti,
-\newblock \emph{d-wave, dimer, and chiral states in the two-dimensional hubbard
-  model},
-\newblock Phys. Rev. B \textbf{43}, 6190 (1991),
-\newblock \doi{10.1103/PhysRevB.43.6190}.
 
 \bibitem{Schrieffer66}
 J.~R. Schrieffer and P.~A. Wolff,
