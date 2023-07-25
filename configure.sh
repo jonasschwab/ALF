@@ -242,7 +242,7 @@ case $MODE in
     printf "This requires also MPI parallization which is set as well.\n"
     PROGRAMMCONFIGURATION="-DMPI -DTEMPERING"
     INTELCOMPILER="mpiifort"
-    INTELLLVMCOMPILER="ifx"
+    INTELLLVMCOMPILER="mpiifort -fc=ifx"
     GNUCOMPILER="mpifort"
     MPICOMP=1
   ;;
