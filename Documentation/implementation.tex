@@ -99,6 +99,12 @@ The ALF includes three different types of fields:
 \item[\texttt{t=1}]   This type is for an  Ising field, therefore $\gamma= 1$ and $ \phi = \pm 1$,
 \item[\texttt{t=2}]   This type is for the generic HS  transformation of Eq.~\eqref{HS_squares} where  $\gamma \equiv \gamma(l) $  and $ \phi = \eta(l)$  with $l = \pm 1, \pm 2$ [see Eq.~\eqref{eta_gamma_fields}],
 \item[\texttt{t=3}]   This type is for continuous fields, i.e., $\gamma= 1$  and $ \phi  \in \mathbb{R}$.
+\item[\texttt{t=4}]   This  type   allows   for  multiple  HS   fields  per   operator.   It is  however  limited  to  the  
+form 
+\begin{equation}
+	  \gamma(l)  e^{ \sqrt{ 1 + \phi}  \,   \eta(l) \,  \bm{X} }, 
+\end{equation}
+where  $\phi$ is  a  continuous   real  variable     generically,  but not  necessarily,  bounded  by  $-1 $.
 \end{itemize}
 %For an Ising term, we store type \texttt{t=1}, which sets $\gamma_{k,\tau} = 1$ and $\phi_{k,\tau}=s_{k,\tau} = \pm 1$. 
 %In the case of a perfect-square term, the fields results from the discrete HS transformation (\ref{HS_squares}) and we store \texttt{t=2}, which sets $\gamma_{k,\tau} = s_{k,\tau}$ and $\phi_{k,\tau}=\eta_{k,\tau}$ ). For continuous real fields $f$ we store \texttt{t=3}, which sets $\gamma_{k,\tau} = 1$ and $\phi_{k,\tau}=f$.
