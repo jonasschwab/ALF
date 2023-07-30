@@ -1,19 +1,18 @@
 ! compile with
 ! gfortran -std=f2003 -I ../../Prog/ -I ../../Libraries/Modules/ -L ../../Libraries/Modules/ 11-Op-mmultR.F90  ../../Prog/Operator_mod.o ../../Prog/Fields_mod.o ../../Libraries/Modules/modules_90.a -llapack -lblas
 
-Program OPMULTTEST
+Program Opmulttest
 
         Use Operator_mod
         Use Fields_mod
         implicit none
 
-        Complex (Kind=Kind(0.D0)) :: Matnew(3,3), matold(3,3), VH(3,3), Z, Z1, Zre, Zim
-        Real (KIND = KIND(0.D0)) :: spin, nspin
+        Complex (Kind=Kind(0.D0)) :: Matnew(3,3), matold(3,3), VH(3,3), Z, Z1, Zre, Zim, nspin
+        Real    (KIND = KIND(0.D0)) :: spin
         Integer :: i, n, m, j, ndim , nt
         Type(Operator) :: Op
         Type (Fields) :: nsigma_single
     
-
         
         Call nsigma_single%make(1,1)
         
