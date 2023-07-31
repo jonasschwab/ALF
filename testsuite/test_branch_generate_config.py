@@ -66,8 +66,10 @@ script:
   - git clone https://git.physik.uni-wuerzburg.de/ALF/pyALF.git
   - export PYTHONPATH="$PWD/pyALF:$PYTHONPATH"
   - cd ${START_DIR}/${TEST_DIR1}
+  - sed -i.bak '1,20d' seeds
   - mpiexec -n 4 ./ALF.out
   - cd ${START_DIR}/${TEST_DIR2}
+  - sed -i.bak '1,20d' seeds
   - mpiexec -n 4 ./ALF.out
   - ${START_DIR}/testsuite/compare_dirs.py
     --results ${START_DIR}/ALF_data/${TEST_NAME}.txt

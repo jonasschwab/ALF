@@ -571,9 +571,14 @@
 
             INTEGER             :: K, hdferr
             INTEGER,ALLOCATABLE :: SEED_VEC(:)
-            INTEGER(HID_T)      :: file_id
+            INTEGER(HID_T)      :: file_id, dset_id, dataspace
             Character (len=64)  :: dset_name
             INTEGER(HSIZE_T), allocatable :: dims(:)
+
+            INTEGER :: rank
+            real    (Kind=Kind(0.d0)), allocatable :: f_tmp_real(:,:)
+            Complex (Kind=Kind(0.d0)), allocatable, target :: f_tmp_cplx(:,:)
+            TYPE(C_PTR)                   :: dat_ptr
 
             CALL GET_SEED_LEN(K)
             ALLOCATE(SEED_VEC(K))
@@ -590,12 +595,35 @@
 
             !Open and read configuration dataset
             dset_name = "configuration"
-            allocate( dims(2) )
-            dims(1) = SIZE(this%f,1)
-            dims(2) = SIZE(this%f,2)
-            CALL h5ltread_dataset_double_f(file_id, dset_name, this%f, dims, hdferr)
-            deallocate( dims )
+            !Open the  dataset.
+            CALL h5dopen_f(file_id, dset_name, dset_id, hdferr)
+      
+            !Get dataset's dataspace handle.
+            CALL h5dget_space_f(dset_id, dataspace, hdferr)
+      
+            !Get dataspace's rank.
+            CALL h5sget_simple_extent_ndims_f(dataspace, rank, hdferr)
+            if (rank == 2) then
+               ! rank=2 -> Read real config values
+               allocate( dims(2) )
+               dims = [SIZE(this%f,1), SIZE(this%f,2)]
+               allocate(f_tmp_real(dims(1), dims(2)))
+               CALL h5ltread_dataset_double_f(file_id, dset_name, f_tmp_real, dims, hdferr)
+               this%f(:,:) = f_tmp_real(:,:)
+               deallocate(dims, f_tmp_real)
+            else
+               ! Read complex config values
+               allocate( dims(3) )
+               dims = [2, SIZE(this%f,1), SIZE(this%f,2)]
+               allocate(f_tmp_cplx(SIZE(this%f,1), SIZE(this%f,2)))
+               dat_ptr = C_LOC(f_tmp_cplx(1,1))
+               CALL H5dread_f(dset_id, H5T_NATIVE_DOUBLE, dat_ptr, hdferr)
+               this%f(:,:) = f_tmp_cplx(:,:)
+               deallocate(dims, f_tmp_cplx)
+            endif
 
+            CALL h5sclose_f(dataspace, hdferr)
+            CALL h5dclose_f(dset_id, hdferr)
             CALL h5fclose_f(file_id, hdferr)
         END SUBROUTINE Fields_read_conf_h5
 #endif
@@ -659,6 +687,8 @@
             INTEGER,ALLOCATABLE :: SEED_VEC(:)
             INTEGER(HID_T)      :: file_id, crp_list, space_id, dset_id
             Character (len=64)  :: dset_name
+            Complex (Kind=Kind(0.d0)), allocatable, target :: f_tmp(:,:)
+            TYPE(C_PTR) :: dat_ptr
 
 
             CALL GET_SEED_LEN(K)
@@ -679,10 +709,9 @@
 
                 !Create and write dataset for configuration
                 dset_name = "configuration"
-                rank = 2
-                allocate( dims(2) )
-                dims(1) = SIZE(this%f,1)
-                dims(2) = SIZE(this%f,2)
+                rank = 3
+                allocate( dims(rank) )
+                dims = [2, SIZE(this%f,1), SIZE(this%f,2)]
                 !Create Dataspace
                 CALL h5screate_simple_f(rank, dims, space_id, hdferr)
                 !Modify dataset creation properties, i.e. enable chunking
@@ -696,9 +725,12 @@
                 CALL h5dcreate_f(file_id, dset_name, H5T_NATIVE_DOUBLE, space_id, &
                                 dset_id, hdferr, crp_list )
                 !Write configuration
-                CALL H5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, this%f, dims, hdferr)
+                allocate(f_tmp(SIZE(this%f,1), SIZE(this%f,2)))
+                f_tmp(:,:) = this%f(:,:)
+                dat_ptr = C_LOC(f_tmp(1,1))
+                CALL H5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, dat_ptr, hdferr)
                 !Close objects
-                deallocate( dims )
+                deallocate(dims, f_tmp)
                 CALL h5sclose_f(space_id, hdferr)
                 CALL h5pclose_f(crp_list, hdferr)
                 CALL h5dclose_f(dset_id,   hdferr)
@@ -719,11 +751,12 @@
                 !open and write configuration dataset
                 dset_name = "configuration"
                 CALL h5dopen_f(file_id, dset_name, dset_id, hdferr)
-                allocate( dims(2) )
-                dims(1) = SIZE(this%f,1)
-                dims(2) = SIZE(this%f,2)
-                CALL H5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, this%f, dims, hdferr)
-                deallocate( dims )
+                allocate(f_tmp(SIZE(this%f,1), SIZE(this%f,2)))
+                f_tmp(:,:) = this%f(:,:)
+                dat_ptr = C_LOC(f_tmp(1,1))
+                CALL H5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, dat_ptr, hdferr)
+                !Close objects
+                deallocate(f_tmp)
                 CALL h5dclose_f(dset_id,   hdferr)
 
                 CALL h5fclose_f(file_id, hdferr)
