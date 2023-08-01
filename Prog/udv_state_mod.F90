@@ -251,21 +251,34 @@ CONTAINS
 !> @param [in] this Class(UDV_state)
 !-------------------------------------------------------------------
      SUBROUTINE testscale_UDV_state(this)
+       use runtime_error_mod
        IMPLICIT NONE
        CLASS(UDV_State), INTENT(IN) :: this
 
 #if !defined(STABLOG)
        real (Kind=Kind(this%D(1))) :: dummy_dp
 
-       ! ATTENTION, the test assumes a (mostly) sorted array D!
+       ! Check if any scale is NaN
+       if ( any(this%D /= this%D) )  then
+          write(error_unit,*) 
+          write(error_unit,*) "Error: At least one scale is NaN."
+          write(error_unit,*) "       Switch to LOG is required."
+          call Terminate_on_error(ERROR_GENERIC,__FILE__,__LINE__)
+       end if 
+
+       ! ATTENTION, the test assumes a (mostly) sorted array D [real and positive numbers]!
        ! Check if largest scale is approaching the largest representable value
-       if (abs(this%D(1)) > 0.9*huge(dummy_dp) .and. trigger_scale_warning) then
-          write(error_unit,*) "largest scale is approaching the largest representable value. Consider switching to STABLOG."
+       if ( dble(this%D(1)) > 0.1*huge(dummy_dp) .and. trigger_scale_warning) then
+          write(error_unit,*) 
+          write(error_unit,*) "Warning: Largest scale is approaching the largest representable value."
+          write(error_unit,*) "         Consider switching to LOG."
           trigger_scale_warning = .false.
        end if  
        ! Check if myVariable is approaching the smallest representable value
-       if (abs(this%D(this%n_part)) < 10.0*tiny(dummy_dp) .and. trigger_scale_warning) then
-          write(error_unit,*) "smallest scale is approaching the smallest representable value. Consider switching to STABLOG."
+       if ( dble(this%D(this%n_part)) < 10.0*tiny(dummy_dp) .and. trigger_scale_warning) then
+          write(error_unit,*) 
+          write(error_unit,*) "Warning: Smallest scale is approaching the smalles representable value."
+          write(error_unit,*) "         Consider switching to LOG."
           trigger_scale_warning = .false.
        end if
 #endif
