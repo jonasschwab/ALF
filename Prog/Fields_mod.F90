@@ -121,8 +121,9 @@
         case(3)
            Fields_Phi = cmplx(real(this%f(n_op,n_tau),kind(0.d0))     , 0.d0,kind(0.d0))
         case(4)
-           Fields_Phi = cmplx(Phi_st(Nint(real(this%f(n_op,n_tau))),2),0.d0,kind(0.d0)) * &
-                &       sqrt(cmplx( 1.d0 +  aimag(this%f(n_op,n_tau)), 0.d0,kind(0.d0)) )
+!!$           Fields_Phi = cmplx(Phi_st(Nint(real(this%f(n_op,n_tau))),2),0.d0,kind(0.d0)) * &
+!!$                &       sqrt(cmplx( 1.d0 +  aimag(this%f(n_op,n_tau)), 0.d0,kind(0.d0)) )
+           Fields_Phi = cmplx(Phi_st(Nint(real(this%f(n_op,n_tau))),2),0.d0,kind(0.d0)) 
         case default
            Write(error_unit,*) 'Error in Fields_Phi'
            CALL Terminate_on_error(ERROR_FIELDS,__FILE__,__LINE__)
@@ -182,9 +183,8 @@
         case (3)
            Fields_flip =   cmplx(real(this%f(n_op,n_tau)) + Amplitude*( ranf_wrap() - 0.5D0), 0.d0,  Kind(0.d0))
         case (4)
-!!$           Fields_flip =   cmplx( Flip_st( nint(real(this%f(n_op,n_tau))),nranf(3))             , &
-!!$                &                 aimag(this%f(n_op,n_tau)) +  Amplitude*( ranf_wrap() - 0.5D0) , Kind(0.d0)) 
-           Fields_flip =   cmplx( Flip_st( nint(real(this%f(n_op,n_tau))),nranf(3)), 0.d0, Kind(0.d0)) 
+           Fields_flip =   cmplx( Flip_st( nint(real(this%f(n_op,n_tau))),nranf(3))             , &
+                &                 aimag(this%f(n_op,n_tau)) +  Amplitude*( ranf_wrap() - 0.5D0) , Kind(0.d0)) 
         case default
            Write(error_unit,*) 'Error in Fields. '
            CALL Terminate_on_error(ERROR_FIELDS,__FILE__,__LINE__)
