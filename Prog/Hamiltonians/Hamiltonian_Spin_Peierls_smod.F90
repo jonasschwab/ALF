@@ -310,7 +310,7 @@
              Calc_Fl(nf_calc)=.True.
              Calc_Fl(nf_reconst)=.False.
           endif
-          
+
         end Subroutine Ham_Set
 !--------------------------------------------------------------------
 !> @author

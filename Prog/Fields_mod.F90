@@ -186,7 +186,7 @@
 !           Fields_flip =   cmplx( Flip_st( nint(real(this%f(n_op,n_tau))),nranf(3))             , &
 !                &                 aimag(this%f(n_op,n_tau)) +  Amplitude*( ranf_wrap() - 0.5D0) , Kind(0.d0))
            Fields_flip =   cmplx( real(this%f(n_op,n_tau))          , &
-                &                 aimag(this%f(n_op,n_tau)) +  Amplitude*( ranf_wrap() - 0.5D0) , Kind(0.d0)) 
+                &                 aimag(this%f(n_op,n_tau)) +  Amplitude*( ranf_wrap() - 0.5D0), Kind(0.d0)) 
         case default
            Write(error_unit,*) 'Error in Fields. '
            CALL Terminate_on_error(ERROR_FIELDS,__FILE__,__LINE__)
@@ -508,7 +508,7 @@
                else 
                   I1 = 1
                   if ( ranf_wrap() > 0.5D0 ) I1 = -1
-                  this%f(I,nt)  = cmplx(dble(I1), 0.d0 ,Kind(0.d0))
+                  this%f(I,nt)  = cmplx(dble(I1),  Amplitude*( ranf_wrap() - 0.5D0) ,Kind(0.d0))
                endif
             enddo
          enddo
