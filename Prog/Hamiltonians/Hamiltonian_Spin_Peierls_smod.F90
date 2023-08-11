@@ -285,8 +285,8 @@
           Endif
 #endif
 
-          Ham_k  =  1.d0/(2.d0*Ham_Lambda)  !Lambda =  g^2/2k = 1/2k
-          Ham_M  =  Ham_k/Ham_Omega0**2     !Omega_0 =  sqrt{k/M}
+          Ham_k  =  1.d0/ (2.d0*Ham_Lambda)  !Lambda  =  g^2/2k = 1/2k
+          Ham_M  =  Ham_k/(Ham_Omega0**2)    !Omega_0 =  sqrt{k/M}
           
           If  ( Ham_h <=  1.D-8 )  SU2_Symm = .true.
           If (SU2_Symm   .and. N_FL  .ne. 1 .and.  N_SUN .ne. 2 )  then  
@@ -470,10 +470,9 @@
 
           S0 = 1.d0
           if  (nsigma%t(n) == 4 ) then
-             
              ntp1  = nt + 1 
              if ( ntp1 > Ltrot )  ntp1  =  1
-             ntm1  = nt - 1;
+             ntm1  = nt - 1 
              if ( ntm1 ==  0   )  ntm1  =  Ltrot
              
              S_old  = Ham_M * ( (aimag(nsigma%f(n,ntp1)-nsigma%f(n,nt)))**2  + (aimag(nsigma%f(n,nt)-nsigma%f(n,ntm1)))**2)/(2.d0*Dtau) + &
@@ -673,8 +672,8 @@
              Obs_scal(1)%Obs_vec(1)  =  Obs_scal(1)%Obs_vec(1) + Zpot * ZP*ZS
              Obs_scal(2)%Obs_vec(1)  =  Obs_scal(2)%Obs_vec(1) + ZRho * ZP*ZS
              Obs_scal(3)%Obs_vec(1)  =  Obs_scal(3)%Obs_vec(1) + Zmag * ZP*ZS
-             Call Predefined_Obs_eq_SpinSUN_measure( Latt, Latt_unit, List,  GR, GRC, N_SUN, ZS, ZP, Obs_eq(1) )
 
+             Call Predefined_Obs_eq_SpinSUN_measure( Latt, Latt_unit, List,  GR, GRC, N_SUN, ZS, ZP, Obs_eq(1) )
              Obs_eq(2)%N        = Obs_eq(2)%N + 1
              Obs_eq(2)%Ave_sign = Obs_eq(2)%Ave_sign + real(ZS,kind(0.d0))
              Do I  = 1, Latt%N
