@@ -477,10 +477,10 @@
              if ( ntm1 ==  0   )  ntm1  =  Ltrot
              
              S_old  = Ham_M * ( (aimag(nsigma%f(n,ntp1)-nsigma%f(n,nt)))**2  + (aimag(nsigma%f(n,nt)-nsigma%f(n,ntm1)))**2)/(2.d0*Dtau) + &
-                  &   Ham_k * Dtau * aimag(nsigma%f(n,nt))**2/2.d0
+                  &   Ham_k * Dtau * ( aimag(nsigma%f(n,nt)) +  Ham_Jx/(4.d0*Ham_k) ) **2/2.d0
              
              S_new  = Ham_M * ( (aimag(nsigma%f(n,ntp1)- Hs_new       ))**2  + (aimag(Hs_new        -nsigma%f(n,ntm1)))**2)/(2.d0*Dtau) + &
-                  &   Ham_k * Dtau * aimag(Hs_new)**2/2.d0
+                  &   Ham_k * Dtau * ( aimag(Hs_new) +  Ham_Jx/(4.d0*Ham_k) )**2/2.d0
 
              S0     = exp(-S_new +  S_old )
           endif
