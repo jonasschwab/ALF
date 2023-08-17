@@ -252,8 +252,7 @@
               !Call MMULT(HLP4,Ain(:,:,nf),Exp_T_M1(:,:,nf) )
               Call Hop_mod_mmthl_m1(Ain(:,:,nf),nf,nt)
               Do n =1,Size(Op_V,1)
-!                  X = -Phi(nsigma(n,nt),Op_V(n,nf)%type)
-                 Call Op_mmultL(Ain(:,:,nf),Op_V(n,nf),-nsigma%f(n,nt),'n',nt)
+                 Call Op_mmultL_m1(Ain(:,:,nf),Op_V(n,nf),nsigma%f(n,nt),'n',nt)
               Enddo
            enddo
 
