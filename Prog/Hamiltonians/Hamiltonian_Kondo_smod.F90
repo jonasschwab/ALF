@@ -572,7 +572,6 @@
           enddo
 
           ! Equal time correlators
-          ! Equal time correlators
           Allocate ( Obs_eq(4) )
           Do I = 1,Size(Obs_eq,1)
              select case (I)
@@ -597,7 +596,7 @@
           enddo
 
           If (Ltau == 1) then
-             ! Equal time correlators
+             ! Time-displaced correlators
              Allocate ( Obs_tau(5) )
              Do I = 1,Size(Obs_tau,1)
                 select case (I)
