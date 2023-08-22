@@ -32,7 +32,7 @@ Program Wrapup
       !
 
       Call nsigma_single%make(1,1)
-      Do nt = 1,2
+      Do nt = 1,4
       Do opn = 1, 4
          Do N_Type = 1, 2
             Allocate (VH(opn, Ndim), matold(Ndim, Ndim), matnew(Ndim,  Ndim))
@@ -50,8 +50,16 @@ Program Wrapup
             Op%alpha = 0.D0
             Call Op_set (Op)
             !
-            spin=-1.d0
-            nsigma_single%f(1,1) = spin
+            Select case(nt)
+            case (1) 
+               nsigma_single%f(1,1) = cmplx(real(1,kind=kind(0.d0)), 0.d0, kind(0.d0))
+            case (2) 
+               nsigma_single%f(1,1) = cmplx(real(2,kind=kind(0.d0)), 0.d0, kind(0.d0))
+            case (3) 
+               nsigma_single%f(1,1) = cmplx(3.14159267d0, 0.d0, kind(0.d0))
+            case (4) 
+               nsigma_single%f(1,1) = cmplx(-1.d0, 0.5d0, kind(0.d0))
+            end Select
             nsigma_single%t(1)   = Op%type 
 !
             Do i = 1, Ndim
@@ -64,9 +72,9 @@ Program Wrapup
 !
 ! check against old version from Operator_FFA.F90
 !
-            Call Op_WrapupFFA (matold, Op, spin, Ndim, N_Type)
+            Call Op_WrapupFFA (matold, Op, nsigma_single%phi(1,1), Ndim, N_Type)
 !
-            Call Op_Wrapup (matnew, Op, spin, Ndim, N_Type, 1)
+            Call Op_Wrapup (matnew, Op, nsigma_single%f(1,1), Ndim, N_Type, 1)
 !
 !
             Do i = 1, Ndim
@@ -94,9 +102,9 @@ Program Wrapup
          End Do
       End Do
    Enddo
-      Call nsigma_single%clear() 
+   Call nsigma_single%clear() 
       
-      write (*,*) "SUCCESS"
+   write (*,*) "SUCCESS"
 End Program Wrapup
 !
 Subroutine Op_WrapupFFA (Mat, Op, spin, Ndim, N_Type)
@@ -128,8 +136,7 @@ Subroutine Op_WrapupFFA (Mat, Op, spin, Ndim, N_Type)
          VH = 0.D0
          Do n = 1, Op%n
             Z = CMPLX (1.d0, 0.d0, kind(0.D0))
-            If (n <= Op%N_non_Zero) Z = Exp (-Op%g*CMPLX(Op%E(n)*Real(spin,kind(0.d0)), &
-           & 0.d0, kind(0.D0)))
+            If (n <= Op%N_non_Zero) Z = Exp (-Op%g*Op%E(n)*spin)
             Do m = 1, Op%n
                Z1 = Op%U (m, n) * Z
                Do i = 1, Ndim
@@ -146,8 +153,7 @@ Subroutine Op_WrapupFFA (Mat, Op, spin, Ndim, N_Type)
          VH = 0.D0
          Do n = 1, Op%n
             Z = CMPLX (1.d0, 0.d0, kind(0.D0))
-            If (n <= Op%N_non_Zero) Z = Exp (Op%g*CMPLX(Op%E(n)*Real(spin,kind(0.d0)), &
-           & 0.d0, kind(0.D0)))
+            If (n <= Op%N_non_Zero) Z = Exp (Op%g*Op%E(n)*spin)
             Do m = 1, Op%n
                Z1 = Z * conjg (Op%U(m, n))
                Do i = 1, Ndim
