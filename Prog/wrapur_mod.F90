@@ -95,6 +95,8 @@ module wrapur_mod
            endif
            CALL UDV_WRAP_Pivot(TMP1(:,1:UDVR(nf_eff)%N_part), udvr(nf_eff)%U, udvr(nf_eff)%D, V1,NCON,Ndim,UDVR(nf_eff)%N_part)
            if(allocated(udvr(nf_eff)%V)) CALL MMULT(udvr(nf_eff)%V, V1, TMP)
+           ! Test if scales in D are appraoching the limit of double precision.
+           CALL UDVR(nf_eff)%testscale
         ENDDO
 #else
         Implicit None
@@ -117,6 +119,8 @@ module wrapur_mod
            ENDDO
 
            CALL UDVR(nf_eff)%decompose
+           ! Test if scales in D are appraoching the limit of double precision.
+           CALL UDVR(nf_eff)%testscale
         ENDDO
 
 #endif

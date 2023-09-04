@@ -101,6 +101,8 @@ module wrapul_mod
            else
               CALL UDV_WRAP_Pivot(TMP1(:,1:UDVL(nf_eff)%N_part),udvl(nf_eff)%U,udvl(nf_eff)%D,V1,NCON,Ndim,UDVL(nf_eff)%N_part)
            endif
+           ! Test if scales in D are appraoching the limit of double precision.
+           CALL UDVL(nf_eff)%testscale
         ENDDO
 
 #else
@@ -124,6 +126,8 @@ module wrapul_mod
            
            !Carry out U,D,V decomposition.
            CALL UDVL(nf_eff)%decompose
+           ! Test if scales in D are appraoching the limit of double precision.
+           CALL UDVL(nf_eff)%testscale
         Enddo
 #endif
       END SUBROUTINE WRAPUL
