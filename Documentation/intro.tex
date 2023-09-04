@@ -95,9 +95,25 @@ The class of solvable models includes  Hamiltonians $\hat{\mathcal{H}}$ that hav
 \sum\limits_{x,y}^{N_{\mathrm{dim}}}
 \hat{c}^{\dagger}_{x \sigma s} I_{xy}^{(k s)}\hat{c}^{\phantom\dagger}_{y \sigma s}
 \right) \equiv \sum\limits_{k=1}^{M_I} \hat{Z}_{k}    \hat{I}^{(k)} 
-\,.\label{eqn:general_ham_i}
+\,.\label{eqn:general_ham_i} \, \\
+\hat{\mathcal{H}}_{Q}
+& = 
+\sum\limits_{k=1}^{M_Q} \tilde{U}_{k} \left( 1 +  \hat{Q}_k \right) 
+ \left\{
+\sum\limits_{\sigma=1}^{N_{\mathrm{col}}}
+\sum\limits_{s=1}^{N_{\mathrm{fl}}}
+\left[
+\left(
+\sum\limits_{x,y}^{N_{\mathrm{dim}}}
+\hat{c}^{\dagger}_{x \sigma s}\tilde{V}_{xy}^{(k s)}\hat{c}^{\phantom\dagger}_{y \sigma s}
+\right)
++\tilde{\alpha}_{k s} 
+\right]
+\right\}^{2} 
+\,.\label{eqn:general_ham_Q}
 \end{align}
-\fa{Maybe  that  we  will have to change  the  Hamiltonian in  light  of  the  type 4  field.}
+\fa{In light  of  the type 4  moves,  our    Hamiltonian is now  more   general.  This  does  make  things  more  complicated,  such  that we  may  want to 
+postpone  this  discussion just to  the   discussion of  the spin-Peierls  Hamiltonian. }
 The indices and symbols used above have the following meaning: 
 \begin{itemize}
 \item The number of fermion \emph{flavors} is set by $N_{\mathrm{fl}}$.  After the HS transformation, the action will be block diagonal in the flavor index. 
