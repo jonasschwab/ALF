@@ -361,9 +361,9 @@
                 x = -1.d0
                 If  (nf == 1)  x = 1.d0
                 Call Op_make(Op_T(1,nf),1)
-                Op_T(n,nf)%P(1)   = 1
-                Op_T(n,nf)%O(1,1) = cmplx(1.d0,0.d0,kind(0.D0)) 
-                Op_T(n,nf)%g      = cmplx(0.d0,0.d0,kind(0.d0))
+                Op_T(1,nf)%P(1)   = 1
+                Op_T(1,nf)%O(1,1) = cmplx(1.d0,0.d0,kind(0.D0)) 
+                Op_T(1,nf)%g      = cmplx(0.d0,0.d0,kind(0.d0))
                 Call Op_set( Op_T(1,nf) )
              enddo
           else
