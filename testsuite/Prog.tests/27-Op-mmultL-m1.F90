@@ -71,8 +71,8 @@ Program Mmult_m1
                End Do
                !
                !
-               Call Op_mmultL_m1(Matnew,Op,nsigma_single%f(1,1),cop, 1, 1)
-               Call Op_mmultL_m1(Matnew,Op,nsigma_single%f(1,1),cop, 1,-1)
+               Call Op_mmultL(Matnew,Op,nsigma_single%f(1,1),cop, 1, 1)
+               Call Op_mmultL(Matnew,Op,nsigma_single%f(1,1),cop, 1,-1)
                
                Do i = 1, Ndim
                   Do j = 1, Ndim
