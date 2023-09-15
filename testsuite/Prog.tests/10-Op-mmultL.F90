@@ -53,7 +53,7 @@ Program Opmulttest
             enddo
          enddo
          
-         Call Op_mmultL(matnew, Op, nsigma_single%f(1,1), 'n',1)
+         Call Op_mmultL(matnew, Op, nsigma_single%f(1,1), 'n',1,1)
          
          ! check against old version from Operator_FFA.F90
          
@@ -126,7 +126,7 @@ Program Opmulttest
             enddo
          enddo
          
-         Call Op_mmultL(matnew, Op,  nsigma_single%f(1,1), 'n',1)
+         Call Op_mmultL(matnew, Op,  nsigma_single%f(1,1), 'n',1,1)
          
          ! check against old version from Operator_FFA.F90
          
