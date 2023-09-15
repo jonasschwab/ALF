@@ -559,7 +559,7 @@
 
 
 !           ! Scalar observables
-           Allocate ( Obs_scal(4) )
+           Allocate ( Obs_scal(3) )
            Do I = 1,Size(Obs_scal,1)
              select case (I)
              case (1)
@@ -567,9 +567,7 @@
              case (2)
                N = 1;   Filename = "Part"
              case (3)
-               N = 1;   Filename = "Mag"
-             case (4)
-               N = 1;   Filename = "Phi"
+               N = 2;   Filename = "Phi"
              case default
                Write(6,*) ' Error in Alloc_obs '
              end select
@@ -577,85 +575,46 @@
            enddo
 
            ! Equal time correlators
-           If (SU2_Symm)  then
-              Allocate ( Obs_eq(2) )
-              Do I = 1,Size(Obs_eq,1)
+           Allocate ( Obs_eq(2) )
+           Do I = 1,Size(Obs_eq,1)
+              select case (I)
+              case (1)
+                 Filename = "SpinZ"
+              case (2)
+                 Filename = "Phi"
+              case default
+                 Write(6,*) ' Error in Alloc_obs '
+              end select
+              Nt = 1
+              Channel = '--'
+              If (I == 2) then
+                 Call Obser_Latt_make(Obs_eq(I), Nt, Filename, Latt, Latt1_unit, Channel, dtau)
+              else
+                 Call Obser_Latt_make(Obs_eq(I), Nt, Filename, Latt, Latt_unit, Channel, dtau)
+              endif
+           enddo
+           If (Ltau == 1) then
+              ! Time-displaced correlators
+              Allocate ( Obs_tau(2) )
+              Do I = 1,Size(Obs_tau,1)
                  select case (I)
                  case (1)
-                    Filename = "SpinZ"
+                    Channel = 'PH' ; Filename = "SpinZ"
                  case (2)
-                    Filename = "Phi"
+                    Channel = 'PH' ; Filename = "Phi"
                  case default
                     Write(6,*) ' Error in Alloc_obs '
                  end select
-                 Nt = 1
-                 Channel = '--'
+                 Nt = Ltrot+1-2*Thtrot
+                 If(Projector) Channel = 'T0'
                  If (I == 2) then
-                    Call Obser_Latt_make(Obs_eq(I), Nt, Filename, Latt, Latt1_unit, Channel, dtau)
+                    Call Obser_Latt_make(Obs_tau(I), Nt, Filename, Latt, Latt1_unit, Channel, dtau)
                  else
-                    Call Obser_Latt_make(Obs_eq(I), Nt, Filename, Latt, Latt_unit, Channel, dtau)
+                    Call Obser_Latt_make(Obs_tau(I), Nt, Filename, Latt, Latt_unit, Channel, dtau)
                  endif
               enddo
-              If (Ltau == 1) then
-                 ! Time-displaced correlators
-                 Allocate ( Obs_tau(2) )
-                 Do I = 1,Size(Obs_tau,1)
-                    select case (I)
-                    case (1)
-                       Channel = 'PH' ; Filename = "SpinZ"
-                    case (2)
-                       Channel = 'PH' ; Filename = "Phi"
-                    case default
-                       Write(6,*) ' Error in Alloc_obs '
-                    end select
-                    Nt = Ltrot+1-2*Thtrot
-                    If(Projector) Channel = 'T0'
-                    If (I == 2) then
-                       Call Obser_Latt_make(Obs_tau(I), Nt, Filename, Latt, Latt1_unit, Channel, dtau)
-                    else
-                       Call Obser_Latt_make(Obs_tau(I), Nt, Filename, Latt, Latt_unit, Channel, dtau)
-                    endif
-                 enddo
-              endif
-           else
-              Allocate ( Obs_eq(3) )
-              Do I = 1,Size(Obs_eq,1)
-                 select case (I)
-                 case (1)
-                    Filename = "SpinZ"
-                 case (2)
-                    Filename = "SpinXY"
-                 case (3)
-                    Filename = "SpinXYZ"
-                 case default
-                    Write(6,*) ' Error in Alloc_obs '
-                 end select
-                 Nt = 1
-                 Channel = '--'
-                 Call Obser_Latt_make(Obs_eq(I), Nt, Filename, Latt, Latt_unit, Channel, dtau)
-              enddo
-              
-              If (Ltau == 1) then
-                 ! Time-displaced correlators
-                 Allocate ( Obs_tau(3) )
-                 Do I = 1,Size(Obs_tau,1)
-                    select case (I)
-                    case (1)
-                       Channel = 'PH' ; Filename = "SpinZ"
-                    case (2)
-                       Channel = 'PH'; Filename = "SpinXY"
-                    case (3)
-                       Channel = 'PH'; Filename = "SpinXYZ"
-                    case default
-                       Write(6,*) ' Error in Alloc_obs '
-                    end select
-                    Nt = Ltrot+1-2*Thtrot
-                    If(Projector) Channel = 'T0'
-                    Call Obser_Latt_make(Obs_tau(I), Nt, Filename, Latt, Latt_unit, Channel, dtau)
-                 enddo
-              endif
            endif
-        End Subroutine Alloc_obs
+         End Subroutine Alloc_obs
 
 !--------------------------------------------------------------------
 !> @author
@@ -690,7 +649,7 @@
 
           !Local
           Complex (Kind=Kind(0.d0)) :: GRC(Ndim,Ndim,N_FL)
-          Complex (Kind=Kind(0.d0)) :: ZP, ZS, Zrho,  ZPot,Zmag, Z_phi
+          Complex (Kind=Kind(0.d0)) :: ZP, ZS, Zrho,  ZPot,Zmag, Z_phi_x,  Z_phi_y
           Integer :: I, J, nf, no_I,  no_J, nc,  nc1, imj
           ! Add local variables as needed
 
@@ -715,65 +674,52 @@
              Obs_scal(I)%Ave_sign  =  Obs_scal(I)%Ave_sign + Real(ZS,kind(0.d0))
           Enddo
 
-          Z_phi  = cmplx(0.d0, 0.d0, kind(0.D0))
-          do I  = 1,  size(nsigma%f,1)
-             Z_phi  =  Z_phi +  aimag(nsigma%f(I,ntau) )
+          Z_phi_x  = cmplx(0.d0, 0.d0, kind(0.D0))
+          Z_phi_y  = cmplx(0.d0, 0.d0, kind(0.D0))
+          do I  = 1,  Latt%N
+             nc= Listb(I,1)  
+             Z_phi_x  =  Z_phi_x +  aimag(nsigma%f(nc,ntau) )
           enddo
-          Z_Phi  =  Z_Phi/dble(size(nsigma%f,1))
-          Obs_scal(4)%Obs_vec(1)  =  Obs_scal(4)%Obs_vec(1) + Z_phi * ZP*ZS
-          
-          If (SU2_Symm)  then
-             Zrho = cmplx(0.d0, 0.d0, kind(0.D0))
-             ZPot = cmplx(0.d0, 0.d0, kind(0.D0))
-             Zmag = cmplx(0.d0, 0.d0, kind(0.D0))
-             Do I = 1,Ndim
-                ZPot = ZPot + Grc(i,i,1) * Grc(i,i,1)
-                ZRho = ZRho + Grc(i,i,1) + Grc(i,i,1)
-                Zmag = Zmag + Grc(i,i,1) - Grc(i,i,1)
-             Enddo
-             Zpot = Zpot 
-             ZRho = ZRho*real(N_SUN,kind(0.d0))
-             Obs_scal(1)%Obs_vec(1)  =  Obs_scal(1)%Obs_vec(1) + Zpot * ZP*ZS
-             Obs_scal(2)%Obs_vec(1)  =  Obs_scal(2)%Obs_vec(1) + ZRho * ZP*ZS
-             Obs_scal(3)%Obs_vec(1)  =  Obs_scal(3)%Obs_vec(1) + Zmag * ZP*ZS
-
-             Call Predefined_Obs_eq_SpinSUN_measure( Latt, Latt_unit, List,  GR, GRC, N_SUN, ZS, ZP, Obs_eq(1) )
-             Obs_eq(2)%N        = Obs_eq(2)%N + 1
-             Obs_eq(2)%Ave_sign = Obs_eq(2)%Ave_sign + real(ZS,kind(0.d0))
-             Do I  = 1, Latt%N
-                Do  No_I = 1, Latt1_unit%Norb
-                   nc  = listb(I,no_I)
-                   Do  J  =  1, Latt%N
-                      DO no_J  =  1, Latt1_unit%Norb
-                         nc1  = listb(J,no_J)
-                         imj  = latt%imj(I,J)
-                         Obs_eq(2)%Obs_Latt(imj,1,no_I,no_J) =  Obs_eq(2)%Obs_Latt(imj,1,no_I,no_J) + &
-                              &    Aimag(nsigma%f(nc,ntau)) * Aimag(nsigma%f(nc1,ntau)) *ZP*ZS
-                      Enddo
-                   Enddo
-                   Obs_eq(2)%Obs_Latt0(no_I) = Obs_eq(2)%Obs_Latt0(no_I)  + Aimag(nsigma%f(nc,ntau)) *ZP*ZS
-                Enddo
-             Enddo
-          else
-             Zrho = cmplx(0.d0, 0.d0, kind(0.D0))
-             ZPot = cmplx(0.d0, 0.d0, kind(0.D0))
-             Zmag = cmplx(0.d0, 0.d0, kind(0.D0))
-             Do I = 1,Ndim
-                ZPot = ZPot + Grc(i,i,1) * Grc(i,i,2)
-                ZRho = ZRho + Grc(i,i,1) + Grc(i,i,2)
-                Zmag = Zmag + Grc(i,i,1) - Grc(i,i,2)
-             Enddo
-             Zpot = Zpot 
-             ZRho = ZRho*real(N_SUN,kind(0.d0))
-             Obs_scal(1)%Obs_vec(1)  =  Obs_scal(1)%Obs_vec(1) + Zpot * ZP*ZS
-             Obs_scal(2)%Obs_vec(1)  =  Obs_scal(2)%Obs_vec(1) + ZRho * ZP*ZS
-             Obs_scal(3)%Obs_vec(1)  =  Obs_scal(3)%Obs_vec(1) + Zmag * ZP*ZS
-             
-             ! Compute equal-time correlations
-             ! Write(6,*)  "Calling SpinMz"
-             Call Predefined_Obs_eq_SpinMz_measure(Latt, Latt_unit, List,  GR, GRC, N_SUN, ZS, ZP, &
-                  &                                Obs_eq(1), Obs_eq(2), Obs_eq(3) )
+          Z_Phi_x =  Z_Phi_x/dble(Latt%N)
+          If  ( L2 >  1 )  then 
+             do I  = 1,  Latt%N
+                nc= Listb(I,2)  
+                Z_phi_y  =  Z_phi_y +  aimag(nsigma%f(nc,ntau) )
+             enddo
+             Z_Phi_y =  Z_Phi_y/dble(Latt%N)
           endif
+          Obs_scal(3)%Obs_vec(1)  =  Obs_scal(3)%Obs_vec(1) + Z_phi_x * ZP*ZS
+          Obs_scal(3)%Obs_vec(2)  =  Obs_scal(3)%Obs_vec(2) + Z_phi_y * ZP*ZS
+          
+          Zrho = cmplx(0.d0, 0.d0, kind(0.D0))
+          ZPot = cmplx(0.d0, 0.d0, kind(0.D0))
+          Zmag = cmplx(0.d0, 0.d0, kind(0.D0))
+          Do I = 1,Ndim
+             ZPot = ZPot + Grc(i,i,1) * Grc(i,i,1)
+             ZRho = ZRho + Grc(i,i,1) + Grc(i,i,1)
+          Enddo
+          Zpot = Zpot 
+          ZRho = ZRho*real(N_SUN,kind(0.d0))
+          Obs_scal(1)%Obs_vec(1)  =  Obs_scal(1)%Obs_vec(1) + Zpot * ZP*ZS
+          Obs_scal(2)%Obs_vec(1)  =  Obs_scal(2)%Obs_vec(1) + ZRho * ZP*ZS
+          
+          Call Predefined_Obs_eq_SpinSUN_measure( Latt, Latt_unit, List,  GR, GRC, N_SUN, ZS, ZP, Obs_eq(1) )
+          Obs_eq(2)%N        = Obs_eq(2)%N + 1
+          Obs_eq(2)%Ave_sign = Obs_eq(2)%Ave_sign + real(ZS,kind(0.d0))
+          Do I  = 1, Latt%N
+             Do  No_I = 1, Latt1_unit%Norb
+                nc  = listb(I,no_I)
+                Do  J  =  1, Latt%N
+                   DO no_J  =  1, Latt1_unit%Norb
+                      nc1  = listb(J,no_J)
+                      imj  = latt%imj(I,J)
+                      Obs_eq(2)%Obs_Latt(imj,1,no_I,no_J) =  Obs_eq(2)%Obs_Latt(imj,1,no_I,no_J) + &
+                           &    Aimag(nsigma%f(nc,ntau)) * Aimag(nsigma%f(nc1,ntau)) *ZP*ZS
+                   Enddo
+                Enddo
+                Obs_eq(2)%Obs_Latt0(no_I) = Obs_eq(2)%Obs_Latt0(no_I)  + Aimag(nsigma%f(nc,ntau)) *ZP*ZS
+             Enddo
+          Enddo
           
         end Subroutine Obser
 

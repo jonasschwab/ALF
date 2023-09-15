@@ -1,7 +1,7 @@
 ! compile with
 !gfortran -std=f2003 -I ../../Prog/ -I ../../Libraries/Modules/ -L ../../Libraries/Modules/  27-Op-mmultL-m1.F90 ../../Prog/Operator_mod.o ../../Prog/Fields_mod.o ../../Libraries/Modules/modules_90.a -llapack -lblas
 !
-Program MMult_m1
+Program Mmult_m1
 !
       Use Operator_mod
       Use Fields_mod
@@ -71,8 +71,8 @@ Program MMult_m1
                End Do
                !
                !
-               Call Op_mmultL   (Matnew,Op,nsigma_single%f(1,1),cop, 1)
-               Call Op_mmultL_m1(Matnew,Op,nsigma_single%f(1,1),cop, 1)
+               Call Op_mmultL_m1(Matnew,Op,nsigma_single%f(1,1),cop, 1, 1)
+               Call Op_mmultL_m1(Matnew,Op,nsigma_single%f(1,1),cop, 1,-1)
                
                Do i = 1, Ndim
                   Do j = 1, Ndim

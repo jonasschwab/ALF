@@ -464,13 +464,14 @@ Contains
     endif
   end subroutine Op_exp
 
+
 !--------------------------------------------------------------------
 !> @author
 !> The ALF Project contributors
 !
 !> @brief 
 !> Out   For  nsigma_single%f(1,1) =  HS_Field   the  routine  computes 
-!>       Op%Mat = Mat* Op ( exp( nsigma_single%phi(1,1)*g* P^T O T) )
+!>       Op%Mat = Mat* Op ( exp( sign * nsigma_single%phi(1,1)*g* P^T O T) )
 !>       For  Op%type = 1,2  the  exponential is  stored. Otherwise  it is
 !>       computed  on the fly
 !>
@@ -487,10 +488,11 @@ Contains
 !> 
   
 !--------------------------------------------------------------------
-  subroutine Op_mmultL(Mat,Op,HS_Field,cop, nt)
+  subroutine Op_mmultL(Mat,Op,HS_Field,cop, nt, sign)
     Implicit none 
     Type (Operator)          , INTENT(IN)    :: Op
     Complex (Kind=Kind(0.d0)), INTENT(INOUT) :: Mat (:,:)
+    Integer                  , INTENT(IN)    :: sign
     Complex (Kind=Kind(0.d0)), INTENT(IN)    :: Hs_Field
     Character                , Intent(IN)    :: cop
     integer                  , intent(in)    :: nt
@@ -512,14 +514,14 @@ Contains
     if ( abs(g_loc) < 1.D-12 ) return
 
     if ( op%type < 3 ) then
-       sp = nint(Real(HS_Field))
+       sp = sign*nint(Real(HS_Field))
        if ( Op%diag ) then
         if (Op%g_t_alloc) then
             do I=1,Op%N
                 if ( cop == 'c' .or. cop =='C' ) then
-                   call ZSCAL(N1,conjg(exp(nsigma_single%phi(1,1)*Op%g_t(nt)*Op%E(I))),Mat(1,Op%P(I)),1)
+                   call ZSCAL(N1,conjg(exp(sign*nsigma_single%phi(1,1)*Op%g_t(nt)*Op%E(I))),Mat(1,Op%P(I)),1)
                 else
-                   call ZSCAL(N1,exp(nsigma_single%phi(1,1)*Op%g_t(nt)*Op%E(I)),Mat(1,Op%P(I)),1)
+                   call ZSCAL(N1,exp(sign*nsigma_single%phi(1,1)*Op%g_t(nt)*Op%E(I)),Mat(1,Op%P(I)),1)
                 endif
             enddo
         else
@@ -533,7 +535,7 @@ Contains
         endif
        else
           if (Op%g_t_alloc) then
-            call Op_exp(nsigma_single%phi(1,1)*Op%g_t(nt),Op,expmat)
+            call Op_exp(sign*nsigma_single%phi(1,1)*Op%g_t(nt),Op,expmat)
             call ZSLGEMM('r',cop,Op%N,N1,N2,expmat,Op%P,Mat)
           else
             call ZSLGEMM('r',cop,Op%N,N1,N2,Op%M_exp(:,:,sp+op%type+1),Op%P,Mat)
@@ -543,110 +545,18 @@ Contains
        if ( Op%diag ) then
           do I=1,Op%N
              if ( cop == 'c' .or. cop =='C' ) then
-                call ZSCAL(N1,conjg(exp(nsigma_single%phi(1,1)*g_loc*Op%E(I))),Mat(1,Op%P(I)),1)
+                call ZSCAL(N1,conjg(exp(sign*nsigma_single%phi(1,1)*g_loc*Op%E(I))),Mat(1,Op%P(I)),1)
              else
-                call ZSCAL(N1,exp(nsigma_single%phi(1,1)*g_loc*Op%E(I)),Mat(1,Op%P(I)),1)
+                call ZSCAL(N1,exp(sign*nsigma_single%phi(1,1)*g_loc*Op%E(I)),Mat(1,Op%P(I)),1)
              endif
           enddo
        else
-          call Op_exp(g_loc*nsigma_single%phi(1,1),Op,expmat)
+          call Op_exp(sign*g_loc*nsigma_single%phi(1,1),Op,expmat)
           call ZSLGEMM('r',cop,Op%N,N1,N2,expmat,Op%P,Mat)
        endif
     endif
     
   end subroutine Op_mmultL
-
-!--------------------------------------------------------------------
-!> @author
-!> The ALF Project contributors
-!
-!> @brief 
-!> Out   For  nsigma_single%f(1,1) =  HS_Field   the  routine  computes 
-!>       Op%Mat = Mat* Op ( exp( - nsigma_single%phi(1,1)*g* P^T O T) )
-!>       For  Op%type = 1,2  the  exponential is  stored. Otherwise  it is
-!>       computed  on the fly
-!>
-!> @param[inout] Mat Complex Dimension(:,:)
-!> * On exit Mat = Mat*Op ( exp(nsigma_single%phi(1,1)*g* P^T O T) )
-!> @param[in] Op Type(Operator)
-!> * The Operator containing g and the sparse matrix P^T O P 
-!> @param[in]  HS_Field Complex
-!> * The field
-!> @param[in] cop  Character
-!> * cop = N,  Op = None
-!> * cop = T,  Op = Transposed
-!> * cop = C,  Op = Transposed + Complex conjugation
-!> 
-  
-!--------------------------------------------------------------------
-  subroutine Op_mmultL_m1(Mat,Op,HS_Field,cop, nt)
-    Implicit none 
-    Type (Operator)          , INTENT(IN)    :: Op
-    Complex (Kind=Kind(0.d0)), INTENT(INOUT) :: Mat (:,:)
-    Complex (Kind=Kind(0.d0)), INTENT(IN)    :: Hs_Field
-    Character                , Intent(IN)    :: cop
-    integer                  , intent(in)    :: nt
-    
-    ! Local 
-    Integer :: I, N1, N2, sp
-    Complex (Kind=Kind(0.d0)) :: ExpMat (Op%n,Op%n), g_loc
-    Type  (Fields)            :: nsigma_single   
-    
-    Call nsigma_single%make(1,1)
-    nsigma_single%f(1,1) = HS_field 
-    nsigma_single%t(1)   = op%type
-
-    N1=size(Mat,1)
-    N2=size(Mat,2)
-
-    g_loc = OP%g
-    if (op%g_t_alloc)  g_loc = Op%g_t(nt)
-    if ( abs(g_loc) < 1.D-12 ) return
-
-    if ( op%type < 3 ) then
-       sp = -nint(Real(HS_Field))
-       if ( Op%diag ) then
-        if (Op%g_t_alloc) then
-            do I=1,Op%N
-                if ( cop == 'c' .or. cop =='C' ) then
-                   call ZSCAL(N1,conjg(exp(-nsigma_single%phi(1,1)*Op%g_t(nt)*Op%E(I))),Mat(1,Op%P(I)),1)
-                else
-                   call ZSCAL(N1,exp(-nsigma_single%phi(1,1)*Op%g_t(nt)*Op%E(I)),Mat(1,Op%P(I)),1)
-                endif
-            enddo
-        else
-            do I=1,Op%N
-             if ( cop == 'c' .or. cop =='C' ) then
-                call ZSCAL(N1,conjg(Op%E_exp(I,sp)),Mat(1,Op%P(I)),1)
-             else
-                call ZSCAL(N1,Op%E_exp(I,sp),Mat(1,Op%P(I)),1)
-             endif
-          enddo
-        endif
-       else
-          if (Op%g_t_alloc) then
-            call Op_exp(-nsigma_single%phi(1,1)*Op%g_t(nt),Op,expmat)
-            call ZSLGEMM('r',cop,Op%N,N1,N2,expmat,Op%P,Mat)
-          else
-            call ZSLGEMM('r',cop,Op%N,N1,N2,Op%M_exp(:,:,sp+op%type+1),Op%P,Mat)
-          endif
-       endif
-    else
-       if ( Op%diag ) then
-          do I=1,Op%N
-             if ( cop == 'c' .or. cop =='C' ) then
-                call ZSCAL(N1,conjg(exp(-nsigma_single%phi(1,1)*g_loc*Op%E(I))),Mat(1,Op%P(I)),1)
-             else
-                call ZSCAL(N1,exp(-nsigma_single%phi(1,1)*g_loc*Op%E(I)),Mat(1,Op%P(I)),1)
-             endif
-          enddo
-       else
-          call Op_exp(-g_loc*nsigma_single%phi(1,1),Op,expmat)
-          call ZSLGEMM('r',cop,Op%N,N1,N2,expmat,Op%P,Mat)
-       endif
-    endif
-    
-  end subroutine Op_mmultL_m1
 
   
 !--------------------------------------------------------------------
