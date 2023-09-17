@@ -567,7 +567,7 @@
              case (2)
                N = 1;   Filename = "Part"
              case (3)
-               N = 2;   Filename = "Phi"
+               N = 2;   Filename = "PhiXY"
              case default
                Write(6,*) ' Error in Alloc_obs '
              end select
