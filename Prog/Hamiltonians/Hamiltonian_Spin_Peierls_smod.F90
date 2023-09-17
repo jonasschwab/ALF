@@ -184,7 +184,7 @@
       !#PARAMETERS END#
       
       Type (Lattice),       target :: Latt
-      Type (Unit_cell),     target :: Latt_unit, Latt1_unit
+      Type (Unit_cell),     target :: Latt_unit, Latt_phi_unit
       Type (Hopping_Matrix_type), Allocatable :: Hopping_Matrix(:)
       Integer, allocatable :: List(:,:), Invlist(:,:)  ! For orbital structure of Unit cell
       Integer  ::  nf_calc,  nf_reconst  !  For  flavor  symmetry
@@ -334,9 +334,9 @@
 
           Call  Predefined_Latt(Lattice_type, L1, L2, Ndim, List, Invlist, Latt, Latt_Unit )
 
-          Latt1_unit%Norb = Latt_Unit%N_coord
-          Allocate (Latt1_unit%Orb_pos_p(2,2))
-          Latt1_unit%Orb_pos_p = 0.d0
+          Latt_phi_unit%Norb = Latt_Unit%N_coord
+          Allocate (Latt_phi_unit%Orb_pos_p(2,2))
+          Latt_phi_unit%Orb_pos_p = 0.d0
           
           
         end Subroutine Ham_Latt
@@ -575,42 +575,46 @@
            enddo
 
            ! Equal time correlators
-           Allocate ( Obs_eq(2) )
+           Allocate ( Obs_eq(3) )
            Do I = 1,Size(Obs_eq,1)
               select case (I)
               case (1)
                  Filename = "SpinZ"
               case (2)
                  Filename = "Phi"
+              case (3)
+                 Filename = "Dimer"
               case default
                  Write(6,*) ' Error in Alloc_obs '
               end select
               Nt = 1
               Channel = '--'
-              If (I == 2) then
-                 Call Obser_Latt_make(Obs_eq(I), Nt, Filename, Latt, Latt1_unit, Channel, dtau)
-              else
+              If (I == 1) then
                  Call Obser_Latt_make(Obs_eq(I), Nt, Filename, Latt, Latt_unit, Channel, dtau)
+              else
+                 Call Obser_Latt_make(Obs_eq(I), Nt, Filename, Latt, Latt_phi_unit, Channel, dtau)
               endif
            enddo
            If (Ltau == 1) then
               ! Time-displaced correlators
-              Allocate ( Obs_tau(2) )
+              Allocate ( Obs_tau(3) )
               Do I = 1,Size(Obs_tau,1)
                  select case (I)
                  case (1)
                     Channel = 'PH' ; Filename = "SpinZ"
                  case (2)
                     Channel = 'PH' ; Filename = "Phi"
+                 case (3)
+                    Channel = 'PH' ; Filename = "Dimer"
                  case default
                     Write(6,*) ' Error in Alloc_obs '
                  end select
                  Nt = Ltrot+1-2*Thtrot
                  If(Projector) Channel = 'T0'
-                 If (I == 2) then
-                    Call Obser_Latt_make(Obs_tau(I), Nt, Filename, Latt, Latt1_unit, Channel, dtau)
-                 else
+                 If (I == 1) then
                     Call Obser_Latt_make(Obs_tau(I), Nt, Filename, Latt, Latt_unit, Channel, dtau)
+                 else
+                    Call Obser_Latt_make(Obs_tau(I), Nt, Filename, Latt, Latt_phi_unit, Channel, dtau)
                  endif
               enddo
            endif
@@ -650,7 +654,7 @@
           !Local
           Complex (Kind=Kind(0.d0)) :: GRC(Ndim,Ndim,N_FL)
           Complex (Kind=Kind(0.d0)) :: ZP, ZS, Zrho,  ZPot,Zmag, Z_phi_x,  Z_phi_y
-          Integer :: I, J, nf, no_I,  no_J, nc,  nc1, imj
+          Integer :: I, I1, J, J1, nf, no_I,  no_J, nc,  nc1, imj
           ! Add local variables as needed
 
           ZP = PHASE/Real(Phase, kind(0.D0))
@@ -704,23 +708,41 @@
           Obs_scal(2)%Obs_vec(1)  =  Obs_scal(2)%Obs_vec(1) + ZRho * ZP*ZS
           
           Call Predefined_Obs_eq_SpinSUN_measure( Latt, Latt_unit, List,  GR, GRC, N_SUN, ZS, ZP, Obs_eq(1) )
-          Obs_eq(2)%N        = Obs_eq(2)%N + 1
-          Obs_eq(2)%Ave_sign = Obs_eq(2)%Ave_sign + real(ZS,kind(0.d0))
+          !Phonon and  dimer correlations
+          Do  I  = 2,3
+             Obs_eq(I)%N        = Obs_eq(I)%N + 1
+             Obs_eq(I)%Ave_sign = Obs_eq(I)%Ave_sign + real(ZS,kind(0.d0))
+          enddo
           Do I  = 1, Latt%N
-             Do  No_I = 1, Latt1_unit%Norb
+             Do  No_I = 1, Latt_phi_unit%Norb
                 nc  = listb(I,no_I)
+                If (no_I == 1) then
+                   I1 = latt%nnlist(I,1,0)
+                else
+                   I1 = latt%nnlist(I,0,1)
+                endif
                 Do  J  =  1, Latt%N
-                   DO no_J  =  1, Latt1_unit%Norb
+                   DO no_J  =  1, Latt_phi_unit%Norb
                       nc1  = listb(J,no_J)
+                      If (no_J == 1) then
+                         J1 = latt%nnlist(J,1,0)
+                      else
+                         J1 = latt%nnlist(J,0,1)
+                      endif
                       imj  = latt%imj(I,J)
                       Obs_eq(2)%Obs_Latt(imj,1,no_I,no_J) =  Obs_eq(2)%Obs_Latt(imj,1,no_I,no_J) + &
                            &    Aimag(nsigma%f(nc,ntau)) * Aimag(nsigma%f(nc1,ntau)) *ZP*ZS
+                      Obs_eq(3)%Obs_Latt(imj,1,no_I,no_J) =  Obs_eq(3)%Obs_Latt(imj,1,no_I,no_J) + &
+                           &    Predefined_Obs_dimer_eq(I,I1,J,J1, GR, GRC, N_SUN, N_FL)*ZP*ZS
                    Enddo
                 Enddo
                 Obs_eq(2)%Obs_Latt0(no_I) = Obs_eq(2)%Obs_Latt0(no_I)  + Aimag(nsigma%f(nc,ntau)) *ZP*ZS
+                Obs_eq(3)%Obs_Latt0(no_I) = Obs_eq(3)%Obs_Latt0(no_I) +  &
+                     &  Predefined_Obs_dimer0_eq(I,I1, GR, N_SUN, N_FL) * ZP*ZS
+
              Enddo
           Enddo
-          
+
         end Subroutine Obser
 
 
@@ -761,7 +783,7 @@
           
           !Locals
           Complex (Kind=Kind(0.d0)) :: ZP, ZS
-          Integer :: I,J, No_I, No_J, imj,  nc, nc1, nt_st
+          Integer :: I, I1, J, J1, No_I, No_J, imj,  nc, nc1, nt_st
           Real (Kind=Kind(0.d0)) :: X
           ! Add local variables as needed
 
@@ -770,38 +792,45 @@
           ZS = ZS * Mc_step_weight
 
           ! Compute observables
-          If (SU2_Symm)  then
-             Call Predefined_Obs_tau_SpinSUN_measure( Latt, Latt_unit, List, NT, GT0,G0T,G00,GTT,  N_SUN, ZS, ZP, Obs_tau(1) )
+          Call Predefined_Obs_tau_SpinSUN_measure( Latt, Latt_unit, List, NT, GT0,G0T,G00,GTT,  N_SUN, ZS, ZP, Obs_tau(1) )
 
-             If (NT == 0 ) then
-                Obs_tau(2)%N        = Obs_tau(2)%N + 1
-                Obs_tau(2)%Ave_sign = Obs_tau(2)%Ave_sign + real(ZS,kind(0.d0))
-             endif
-             Do I  = 1, Latt%N
-                Do  No_I = 1, Latt1_unit%Norb
-                   nc  = listb(I,no_I)
-                   Do  J  =  1, Latt%N
-                      DO no_J  =  1, Latt1_unit%Norb
-                         nc1  = listb(J,no_J)
-                         imj  = latt%imj(I,J)
-                         X  = 0.d0
-                         do  nt_st =  1,Ltrot
-                            X = X  + Aimag(nsigma%f(nc,nt_st)) * Aimag(nsigma%f(nc1,NPBC_beta(NT+nt_st,Ltrot)))
-                         enddo
-                         X = X/dble(Ltrot)
-                         Obs_tau(2)%Obs_Latt(imj,NT+1,no_I,no_J) =  Obs_tau(2)%Obs_Latt(imj,NT+1,no_I,no_J) + &
-                              &    X*ZP*ZS
-                      Enddo
-                   Enddo
-                   Obs_tau(2)%Obs_Latt0(no_I) = Obs_tau(2)%Obs_Latt0(no_I)  + Aimag(nsigma%f(nc,NPBC_beta(NT+1,Ltrot) )) *ZP*ZS
-                Enddo
-             Enddo
-          else
-             Call Predefined_Obs_tau_SpinMz_measure( Latt, Latt_unit, List, NT, GT0,G0T,G00,GTT,  N_SUN, ZS, ZP, &
-                  &                                  Obs_tau(1), Obs_tau(2), Obs_tau(3) )
+          If (NT == 0 ) then
+             Do  I  =  2,3 
+                Obs_tau(I)%N        = Obs_tau(I)%N + 1
+                Obs_tau(I)%Ave_sign = Obs_tau(I)%Ave_sign + real(ZS,kind(0.d0))
+             enddo
           endif
-
-          !  Compute  Phonon-dynamics
+          Do I  = 1, Latt%N
+             Do  No_I = 1, Latt_phi_unit%Norb
+                nc  = listb(I,no_I)
+                If (no_I == 1) then
+                   I1 = latt%nnlist(I,1,0)
+                else
+                   I1 = latt%nnlist(I,0,1)
+                endif
+                Do  J  =  1, Latt%N
+                   DO no_J  =  1, Latt_phi_unit%Norb
+                      nc1  = listb(J,no_J)
+                      If (no_J == 1) then
+                         J1 = latt%nnlist(J,1,0)
+                      else
+                         J1 = latt%nnlist(J,0,1)
+                      endif
+                      imj  = latt%imj(I,J)
+                      X  = 0.d0
+                      do  nt_st =  1,Ltrot
+                         X = X  + Aimag(nsigma%f(nc,nt_st)) * Aimag(nsigma%f(nc1,NPBC_beta(NT+nt_st,Ltrot)))
+                      enddo
+                      X = X/dble(Ltrot)
+                      Obs_tau(3)%Obs_Latt(imj,NT+1,no_I,no_J) =  Obs_tau(3)%Obs_Latt(imj,NT+1,no_I,no_J) + &
+                           &     Predefined_Obs_dimer_tau(I, I1, J, J1, GT0,G0T,G00,GTT, N_SUN, N_FL)*ZP*ZS
+                   Enddo
+                Enddo
+                Obs_tau(2)%Obs_Latt0(no_I) = Obs_tau(2)%Obs_Latt0(no_I)  + Aimag(nsigma%f(nc,NPBC_beta(NT+1,Ltrot) )) *ZP*ZS
+                Obs_tau(3)%Obs_Latt0(no_I) = Obs_tau(3)%Obs_Latt0(no_I)  + &
+                     &                       Predefined_Obs_dimer0_eq(I,I1, GTT, N_SUN, N_FL)*ZP*ZS
+             Enddo
+          Enddo
           
         end Subroutine OBSERT
 !--------------------------------------------------------------------
