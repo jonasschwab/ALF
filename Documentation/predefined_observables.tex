@@ -305,9 +305,10 @@ The  function
 returns:
 \begin{equation}  
   \left< \left< \hat{K}_{i,m}  \hat{K}_{j,n}    \right>  \right>_C    \, \, \,   \text{with} \, \, \,  \hat{K}_{i,m}   = 
-  \sum_{s=1}^{N_{Fl}} \sum_{\sigma=1}^{N_{col}}  \hat{c}^{\dagger}_{i,s,\sigma}  \hat{c}^{\phantom\dagger}_{m,s, \sigma}   + \text{H.c} 
+  \sum_{s=1}^{N_{Fl}} \sum_{\sigma=1}^{N_{col}}  \hat{c}^{\dagger}_{i,s,\sigma}  \hat{c}^{\phantom\dagger}_{m,s, \sigma}   + \text{H.c.} 
 \end{equation}
 
+\noindent
 The  accompanying  function 
 \begin{lstlisting}[style=fortran]
 Complex (Kind=Kind(0.d0)) function Predefined_Obs_dimer_kin0_eq(I,M, GR, N_SUN, N_FL) 
@@ -324,12 +325,12 @@ The  function
 \begin{lstlisting}[style=fortran]
  Complex (Kind=Kind(0.d0)) function Predefined_Obs_V_Int(OP_Vint, GR, GRC, N_SUN )
 \end{lstlisting}
-returns,   for  a  \texttt{OP\_Vint\%type=2}      vertex   the   expectation value: 
+returns,   for  a  \texttt{OP\_Vint\%type=2}      vertex,   the   expectation value: 
 \begin{equation}
 	\left< \left<     \left[  \sum_{s=1}^{N_{fl}} \sum_{\sigma=1}^{N_{col}}  \left(   \left(  \sum_{x,y} \hat{c}^{\dagger}_{x,s,\sigma}  V^{s}_{x,y} 
 	 \hat{c}^{\phantom\dagger}_{y,s,\sigma} \right)     +  \alpha_s \right)  \right] ^2    \right>  \right>_C
 \end{equation}
-The   function is   particularly  useful  to  compute  the    total  energy  of  the model  at hand. 
+The   function is   particularly  useful  in computing  the    total  energy  of  the model  at hand. 
 
 %-----------------------------------------------------------------------------------
 \subsubsection{Cotunneling for Kondo models}
