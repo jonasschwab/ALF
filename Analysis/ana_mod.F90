@@ -1021,11 +1021,11 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
      Complex (Kind=Kind(0.d0)), allocatable :: V_help(:,:), V_help_R(:,:), Bins_help(:,:,:,:), Background(:,:), &
           &                                    Xmean_v(:), Xcov(:,:), Weights(:) 
      Complex (Kind=Kind(0.d0)), allocatable :: Bins0(:,:)
-     Real (Kind=Kind(0.d0)), allocatable :: Xk_p_s(:,:), Phase_R(:) 
-     Real (Kind=Kind(0.d0)), allocatable :: AutoCorr(:),En(:)
+     Real    (Kind=Kind(0.d0)), allocatable :: Xk_p_s(:,:), Phase_R(:) 
+     Real    (Kind=Kind(0.d0)), allocatable :: AutoCorr(:),En(:)
      Real    (Kind=Kind(0.d0)) :: Xk_p(2), Xr_p(2),  Xk_extended_p(2) 
      Complex (Kind=Kind(0.d0)) :: Z, Xmean, Xerr, Xmean_r, Xerr_r
-     Real (Kind=Kind(0.d0)) :: Xm,Xe, X
+     Real    (Kind=Kind(0.d0)) :: Xm,Xe, X
      procedure (func_c), pointer :: f_ptr => Background_eq
      
       NAMELIST /VAR_errors/ N_skip, N_rebin, N_Cov, N_Back, N_auto, N_BZ_Zones,  Extended_Zone
