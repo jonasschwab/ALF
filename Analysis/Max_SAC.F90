@@ -40,44 +40,54 @@
 !>
 !
 !--------------------------------------------------------------------
-       Use MaxEnt_stoch_mod
+     Use MaxEnt_stoch_mod
+     Use MaxEnt_mod
 
        use iso_fortran_env, only: output_unit, error_unit
        Implicit  None
-
        Interface
-          Subroutine  Rescale ( XCOV, XQMC,XTAU, Ntau_st, Ntau_en, Tolerance,  Ntau)
+         Subroutine  Rescale ( XCOV, XQMC,XTAU, Ntau_st, Ntau_en, Tolerance,  Ntau)
             Implicit none
             Real (Kind=Kind(0.d0)), INTENT(INOUT),allocatable ::  XCOV(:,:), XQMC(:), XTAU(:)
             Real (Kind=Kind(0.d0)), INTENT (IN) :: Tolerance
             Integer,  INTENT(IN)    ::  Ntau_st, Ntau_en
             Integer,  INTENT(INOUT) ::  Ntau
           end Subroutine Rescale
+          Subroutine  Set_Ker_classic(Xker, Xker_classic, Om_ST,  Om_en, beta,xtau)
+             Implicit  none  
+             Real (Kind=Kind(0.d0)), External :: Xker
+             Real (Kind=Kind(0.d0)), INTENT(INOUT), allocatable ::  Xker_classic(:,:)
+             Real (Kind=Kind(0.d0)), INTENT(IN), allocatable ::  Xtau(:)
+             Real (Kind=Kind(0.d0)), INTENT(IN) :: Om_ST, Om_en, beta
+          End Subroutine Set_Ker_classic
        end Interface
 
        Real (Kind=Kind(0.d0)), Dimension(:)  , allocatable :: XQMC, XQMC_st, XTAU, Xtau_st, &
             &                                                 Alpha_tot, om_bf, alp_bf, xom, A
        Real (Kind=Kind(0.d0)), Dimension(:,:), allocatable :: XCOV, XCOV_st
-       Real (Kind=Kind(0.d0))                              :: X_moments(2), Xerr_moments(2)
+       Real (Kind=Kind(0.d0))                              :: X_moments(2), Xerr_moments(2), ChiSq
        Real (Kind=Kind(0.d0)), External                    :: XKER_ph, Back_trans_ph, XKER_pp, Back_trans_pp, &
-            &                                                 XKER_p, Back_trans_p, XKER_T0, Back_trans_T0
+            &                                                 XKER_p, XKER_p_ph, Back_trans_p, XKER_T0, Back_trans_T0
        Character (Len=64)                                  :: command, File1, File2
        Complex (Kind=Kind(0.d0))                           :: Z
-
+       
 
        Integer                :: Ngamma, Ndis,  NBins, NSweeps, Nwarm, N_alpha, N_cov
        Integer                :: N_skip, N_rebin, N_Back, N_auto, Norb
        Real (Kind=Kind(0.d0)) :: OM_st, OM_en,  alpha_st, R, Tolerance
-       Logical                :: Checkpoint
+       Logical                :: Checkpoint,  Stochastic, Default_model_exists, Particle_channel_PH
        Character (Len=2)      :: Channel
+       ! Space  for classic MaxEnt
+       Real (Kind=Kind(0.d0)), allocatable ::  Xker_classic(:,:),  A_classic(:),  Default(:)
 
        Integer                :: nt, nt1, io_error, n,nw, nwp, ntau, N_alpha_1, i,  nbin_qmc
        Integer                :: ntau_st, ntau_en, ntau_new, Ntau_old
        Real (Kind=Kind(0.d0)) :: dtau, pi, xmom1, x,x1,x2, tau, omp, om, Beta,err, delta, Dom
-       Real (Kind=Kind(0.d0)) :: Zero
+       Real (Kind=Kind(0.d0)) :: Zero, Alpha_classic_st=100000.d0
 
        NAMELIST /VAR_Max_Stoch/ Ngamma, Ndis,  NBins, NSweeps, Nwarm, N_alpha, &
-            &                   OM_st, OM_en,  alpha_st, R,  Checkpoint, Tolerance
+            &                   OM_st, OM_en,  alpha_st, R,  Checkpoint, Tolerance, &
+            &                   Stochastic
 
        NAMELIST /VAR_errors/    N_skip, N_rebin, N_cov,  N_Back, N_auto
 
@@ -90,7 +100,7 @@
           error stop 1
        endif
        close(30)
-
+       
 
        open (unit=10,File="g_dat", status="unknown")
        read(10,*)  ntau, nbin_qmc, Beta, Norb, Channel
@@ -108,6 +118,7 @@
           enddo
        endif
        close(10)
+
        dtau = Xtau(2) - Xtau(1)
 
        Open(unit=50,File='Info_MaxEnt',Status="unknown")
@@ -117,17 +128,24 @@
           Om_st = 0.d0
        endif
        Write(50, "('Covariance         :: ',I2)")  N_cov
-       Write(50, "('Checkpoint         :: ',L1)")  Checkpoint
        Write(50, "('Om_st, Om_en       :: ',2x,F12.6,2x,F12.6)") Om_st, Om_en
        Write(50, "('Delta Om           :: ',2x,F12.6)")  (Om_en - Om_st)/real(Ndis,kind(0.d0))
-       Write(50, "('Bins, Sweeps, Warm :: ',2x,I4,2x,I4,2x,I4)") NBins, NSweeps, Nwarm
-       If (N_alpha <= 10 ) then
-          Write(error_unit,*) 'Not enough temperatures: N_alpha has to be bigger than 10'
-          error stop 1
-       Endif
-       Write(50, "('N_Alpha, Alpha_st,R:: ',2x,I4,F12.6,2x,F12.6)") N_alpha, alpha_st, R
-
-       Zero = 1.D-10
+       If (Stochastic) then
+         Write(50, "('Checkpoint         :: ',L1)")  Checkpoint
+         Write(50, "('Bins, Sweeps, Warm :: ',2x,I4,2x,I4,2x,I4)") NBins, NSweeps, Nwarm
+         If (N_alpha <= 10 ) then
+            Write(error_unit,*) 'Not enough temperatures: N_alpha has to be bigger than 10'
+            error stop 1
+         Endif
+         Write(50, "('N_Alpha, Alpha_st,R:: ',2x,I4,F12.6,2x,F12.6)") N_alpha, alpha_st, R
+       else
+         Write(50, *)  "Classic  MaxEnt" 
+         INQUIRE(FILE="Default", EXIST=Default_model_exists)
+         If (Default_model_exists .and.  .not.Stochastic )  then
+            Write(50, *)  "Using  classic  MaxEnt  with provided default model"
+         endif
+       endif
+       Zero= 1.D-10
        pi = acos(-1.d0)
        Ntau_st = 1
        Ntau_en = Ntau
@@ -137,14 +155,27 @@
        Case ("PP")
           xmom1 = 2.d0* pi * xqmc(1)
        Case ("P")
-          xmom1 =  pi * ( xqmc(1) + xqmc(ntau) )
-          !  Remove the tau = beta point from the data since it is  correlated
-          !  due to the sum rule with  the tau=0 data point. Also if the tau = 0
-          !  data point has no fluctations (due to particle-hole symmetry for instance)
-          !  it will be removed.
-          Ntau_en = Ntau - 1
-          Ntau_st = 1
-          if ( xcov(1,1) < zero )  ntau_st = 2
+          If (  Abs(Beta  - real(ntau-1,kind=kind(0.d0))*dtau)  <  1.D-8 )  then
+             xmom1 =  pi * ( xqmc(1) + xqmc(ntau) )
+             !  Remove the tau = beta point from the data since it is  correlated
+             !  due to the sum rule with  the tau=0 data point. Also if the tau = 0
+             !  data point has no fluctations (due to particle-hole symmetry for instance)
+             !  it will be removed.
+             Ntau_en = Ntau - 1
+             Ntau_st = 1
+             if ( xcov(1,1) < zero )  ntau_st = 2
+             Particle_channel_PH = .false.
+          elseif (  Abs(Beta/2.d0  - real(ntau-1,kind=kind(0.d0))*dtau)  <  1.D-8 )  then
+             Write(50,*) "Detected that Tau_max = beta/2. Assuming particle-hole symmetry"
+             xmom1 =  pi*xqmc(1)
+             if ( xcov(1,1) < zero )  ntau_st = 2
+             Particle_channel_PH = .true.
+             if (Om_st < Zero ) then
+                write(50,*) "Particle-hole symmetry in the partile-hole  channel  requires  OM_st > 0"
+                write(50,*) "Setting  OM_st=0"
+                Om_st = 0.d0
+             endif
+          endif
        Case ("T0")
           xmom1 =  pi*xqmc(1)
           Ntau_st = 1
@@ -164,13 +195,26 @@
        If (  nbin_qmc < 2*Ntau .and. N_cov == 1  )   Write(50,*) 'You do not seem to have enough bins for a reliable estimate of the covariance '
 
 
-       ! Store
+       !Store
        Allocate ( XCOV_st(NTAU,NTAU), XQMC_st(NTAU),XTAU_st(NTAU) )
        XCOV_st = XCOV
        XQMC_st = XQMC
        XTAU_st = XTAU
+       if (.not.Stochastic)  then 
+          Allocate (A_classic(Ndis), Default(Ndis), XKer_classic(size(Xqmc,1),Ndis))
+          If (Default_model_exists) then
+             Open(Unit=10,file="Default",status="unknown") 
+                do nw = 1,Ndis
+                   read(10,*) X,Default(nw)
+                enddo
+             close(10)
+             DOM  =  (OM_En -  OM_St)/dble(Ndis)
+             Default = Default*dom
+          endif
+       endif
 
-
+      
+      
        Allocate (Alpha_tot(N_alpha) )
        do nt = 1,N_alpha
           alpha_tot(nt) = alpha_st*(R**(nt-1))
@@ -179,112 +223,185 @@
 
        Select Case (Channel)
        Case ("PH")
-          If (N_cov == 1 ) then
-             Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_ph, Back_Trans_ph, Beta, &
-                  &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm, N_Cov)
+          If  (Stochastic)  then
+             If (N_cov == 1 ) then
+                Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_ph, Back_Trans_ph, Beta, &
+                     &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm, N_Cov)
+             else
+                Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_ph, Back_Trans_ph, Beta, &
+                    &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm)
+             endif
+             ! Beware: Xqmc and cov are modified in the MaxEnt_stoch call.
           else
-             Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_ph, Back_Trans_ph, Beta, &
-                  &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm)
-          endif
-          ! Beware: Xqmc and cov are modified in the MaxEnt_stoch call.
+             Call Set_Ker_classic(Xker_ph,Xker_classic,Om_st,Om_en,beta,xtau_st)
+             If (.not.Default_model_exists) Default = Xmom1/dble(Ndis)
+             Call  MaxEnt( XQMC, XCOV, A_classic, XKER_classic, Alpha_classic_st, CHISQ ,DEFAULT)
+          endif 
        Case ("PP")
-          If (N_cov == 1 ) then
-             Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_pp, Back_Trans_pp, Beta, &
-                  &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm, N_Cov)
+          If  (Stochastic) then
+             If (N_cov == 1 ) then
+                Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_pp, Back_Trans_pp, Beta, &
+                     &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm, N_Cov)
+             else
+                Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_pp, Back_Trans_pp, Beta, &
+                      &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm)
+             endif
+             ! Beware: Xqmc and cov are modified in the MaxEnt_stoch call.
           else
-             Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_pp, Back_Trans_pp, Beta, &
-                  &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm)
+             Call Set_Ker_classic(Xker_pp,Xker_classic,Om_st,Om_en,beta,xtau_st)
+             If (.not.Default_model_exists) Default = Xmom1/dble(Ndis)
+             Call  MaxEnt( XQMC, XCOV, A_classic, XKER_classic, Alpha_classic_st, CHISQ ,DEFAULT)
           endif
-          ! Beware: Xqmc and cov are modified in the MaxEnt_stoch call.
        Case ("P")
-          If (N_cov == 1 ) then
-             Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_p, Back_Trans_p, Beta, &
-                  &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm, N_Cov)
-          else
-             Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_p, Back_Trans_p, Beta, &
-                  &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm)
-          endif
-          ! Beware: Xqmc and cov are modified in the MaxEnt_stoch call.
+          If  (Stochastic)  then
+             If (Particle_channel_PH)  then
+                If (N_cov == 1 ) then
+                   Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_p_ph, Back_Trans_p, Beta, &
+                       &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm, N_Cov)
+                else
+                   Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_p_ph, Back_Trans_p, Beta, &
+                        &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm)
+                endif
+             else
+                If (N_cov == 1 ) then
+                   Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_p, Back_Trans_p, Beta, &
+                      &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm, N_Cov)
+                else
+                   Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_p, Back_Trans_p, Beta, &
+                       &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm)
+                endif
+             endif 
+             ! Beware: Xqmc and cov are modified in the MaxEnt_stoch call.
+          else  ! Classic
+             If (Particle_channel_PH)  then
+               Call Set_Ker_classic(Xker_p_ph,Xker_classic,Om_st,Om_en,beta,xtau_st)
+             else 
+               Call Set_Ker_classic(Xker_p_ph,Xker_classic,Om_st,Om_en,beta,xtau_st)
+             endif   
+             If (.not.Default_model_exists) Default = Xmom1/dble(Ndis)
+             Call  MaxEnt( XQMC, XCOV, A_classic, XKER_classic, Alpha_classic_st, CHISQ ,DEFAULT)
+          endif  
        Case ("T0")
-          If (N_cov == 1 ) then
-             Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_T0, Back_Trans_T0, Beta, &
-                  &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm, N_Cov)
+          If (Stochastic)  then
+             If (N_cov == 1 ) then
+                Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_T0, Back_Trans_T0, Beta, &
+                     &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm, N_Cov)
+             else
+                Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_T0, Back_Trans_T0, Beta, &
+                    &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm)
+             endif
+            ! Beware: Xqmc and cov are modified in the MaxEnt_stoch call.
           else
-             Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_T0, Back_Trans_T0, Beta, &
-                  &            Alpha_tot, Ngamma, OM_ST, OM_EN, Ndis, Nsweeps, NBins, NWarm)
+             Call Set_Ker_classic(Xker_T0,Xker_classic,Om_st,Om_en,beta,xtau_st)
+             If (.not.Default_model_exists) Default = Xmom1/dble(Ndis)
+             Call  MaxEnt( XQMC, XCOV, A_classic, XKER_classic, Alpha_classic_st, CHISQ ,DEFAULT)
           endif
-          ! Beware: Xqmc and cov are modified in the MaxEnt_stoch call.
        Case default
           Write(error_unit,*) "Channel not yet implemented"
           error stop 1
        end Select
 
-       If ( .not.  Checkpoint ) then
-          Command = "rm dump*"
-          Call EXECUTE_COMMAND_LINE(Command)
-          Command = "ls"
-          Call EXECUTE_COMMAND_LINE(Command)
-       endif
-       Open (Unit=10,File="energies",status="unknown")
-
-       Do n = 1,N_alpha
-          Read(10,*) X,X1,X2
-       enddo
-       Write(50,"('Chisq at lowest temperature: 1/T, Chi^2, Error',2x,F12.6,2x,F12.6,2x,F12.6)") X,X1,X2
-       close(50)
-
-
-
-       Open (Unit = 10,File="Best_fit", Status ="unknown")
-       Allocate (om_bf(Ngamma), alp_bf(Ngamma) )
-       DO i = 1, Ngamma
-          read(10,*)  om_bf(i), alp_bf(i)
-       Enddo
-       close(10)
-
-       Open (Unit = 11,File="Data_out", Status ="unknown")
-       do nt = 1,Ntau
-          X = 0.d0
-          tau = xtau_st(nt)
-          Select Case (Channel)
-          Case ("PH")
-             do i = 1,Ngamma
-                X = X + alp_bf(i)*Xker_ph(tau,om_bf(i), beta)
-             enddo
-          Case ("PP")
-             do i = 1,Ngamma
-                X = X + alp_bf(i)*Xker_pp(tau,om_bf(i), beta)
-             enddo
-          Case ("P")
-             do i = 1,Ngamma
-                X = X + alp_bf(i)*Xker_p(tau,om_bf(i), beta)
-             enddo
-          Case ("T0")
-             do i = 1,Ngamma
-                X = X + alp_bf(i)*Xker_T0(tau,om_bf(i), beta)
-             enddo
-          Case default
-             Write(error_unit,*) "Channel not yet implemented"
-             error stop 1
-          end Select
-          Write(11,"(F14.7,2x,F14.7,2x,F14.7,2x,F14.7)")  xtau_st(nt), xqmc_st(nt),  sqrt(xcov_st(nt,nt)), xmom1*X
-       enddo
-       close(11)
-
-       N_alpha_1 = N_alpha - 10
-       File1 ="Aom_ps"
-       file2 =File_i(File1,N_alpha_1)
-       Open(Unit=66,File=file2,status="unknown")
        Allocate (xom(Ndis), A(Ndis))
-       do nw = 1,Ndis
-          read(66,*) xom(nw), A(nw), x, x1, x2
-       enddo
-       close(66)
-       Dom = xom(2) - xom(1)
+       If  ( Stochastic )   then
+          If ( .not.  Checkpoint  ) then
+            Command = "rm dump*"
+            Call EXECUTE_COMMAND_LINE(Command)
+            Command = "ls"
+            Call EXECUTE_COMMAND_LINE(Command)
+          endif
+          Open (Unit=10,File="energies",status="unknown")
+
+          Do n = 1,N_alpha
+             Read(10,*) X,X1,X2
+          enddo
+          Write(50,"('Chisq at lowest temperature: 1/T, Chi^2, Error',2x,F12.6,2x,F12.6,2x,F12.6)") X,X1,X2
+          close(50)
+
+          Open (Unit = 10,File="Best_fit", Status ="unknown")
+          Allocate (om_bf(Ngamma), alp_bf(Ngamma) )
+          DO i = 1, Ngamma
+            read(10,*)  om_bf(i), alp_bf(i)
+          Enddo
+          close(10)
+
+          Open (Unit = 11,File="Data_out", Status ="unknown")
+          do nt = 1,Ntau
+             X = 0.d0
+             tau = xtau_st(nt)
+             Select Case (Channel)
+                Case ("PH")
+                   do i = 1,Ngamma
+                      X = X + alp_bf(i)*Xker_ph(tau,om_bf(i), beta)
+                   enddo
+                Case ("PP")
+                   do i = 1,Ngamma
+                      X = X + alp_bf(i)*Xker_pp(tau,om_bf(i), beta)
+                   enddo
+                Case ("P")
+                   do i = 1,Ngamma
+                      X = X + alp_bf(i)*Xker_p(tau,om_bf(i), beta)
+                   enddo
+                Case ("T0")
+                   do i = 1,Ngamma
+                      X = X + alp_bf(i)*Xker_T0(tau,om_bf(i), beta)
+                   enddo
+                Case default
+                   Write(error_unit,*) "Channel not yet implemented"
+                   error stop 1
+             end Select
+             Write(11,"(F14.7,2x,F14.7,2x,F14.7,2x,F14.7)")  xtau_st(nt), xqmc_st(nt),  sqrt(xcov_st(nt,nt)), xmom1*X
+          enddo
+          close(11)
+          N_alpha_1 = N_alpha - 10
+          File1 ="Aom_ps"
+          file2 =File_i(File1,N_alpha_1)
+          Open(Unit=66,File=file2,status="unknown")
+          do nw = 1,Ndis
+             read(66,*) xom(nw), A(nw), x, x1, x2
+          enddo
+          close(66)
+          Dom = xom(2) - xom(1)
+          Open (Unit=43,File="Green", Status="unknown", action="write")
+       else 
+          DOM  =  (OM_En -  OM_St)/dble(Ndis)
+          A =  A_classic/Dom
+          do  nw  = 1,Ndis
+             xom(nw) =  OM_St +  dble(nw)*dom
+          enddo
+          Open (Unit = 11,File="Data_out", Status ="unknown")
+          Do Nt = 1,Ntau
+             X = 0.d0
+             Do nw = 1,Ndis
+                X = X  +  A_classic(nw)*Xker_classic(nt,nw)
+             enddo
+             Write(11,"(F14.7,2x,F14.7,2x,F14.7,2x,F14.7)")  xtau_st(nt), xqmc_st(nt),  sqrt(xcov_st(nt,nt)), X
+          enddo
+          Select Case (Channel)
+             Case ("PH")
+                do  nw  = 1,Ndis
+                   A(nw) =  Back_trans_ph(A(nw), xom(nw), beta)
+                enddo
+             Case ("PP")
+                do  nw  = 1,Ndis
+                   A(nw) =  Back_trans_pp(A(nw), xom(nw), beta)
+                enddo
+             Case ("P")
+                do  nw  = 1,Ndis
+                   A(nw) =  Back_trans_p(A(nw), xom(nw), beta)
+                enddo
+             Case ("T0")
+                do  nw  = 1,Ndis
+                   A(nw) =  Back_trans_T0(A(nw), xom(nw), beta)
+                enddo
+             Case default
+                Write(error_unit,*) "Channel not yet implemented"
+                error stop 1
+             end Select
+          Open (Unit=43,File="Green_Classic", Status="unknown", action="write")
+       endif 
 
        ! Compute the real frequency Green function.
        delta = Dom
-       Open (Unit=43,File="Green", Status="unknown", action="write")
        pi = acos(-1.d0)
        do nw = 1,Ndis
           Z = cmplx(0.d0,0.d0,Kind(0.d0))
@@ -297,7 +414,6 @@
           write(43,"('X',2x,F14.7,2x,F16.8,2x,F16.8)") xom(nw), dble(Z), -Aimag(Z)/pi
        enddo
        close(43)
-
 
      end Program MaxEnt_Wrapper
 
@@ -375,6 +491,17 @@
 
      end function BACK_TRANS_PP
 
+     Real (Kind=Kind(0.d0)) function XKER_p_ph(tau,om, beta)
+
+       Implicit None
+       real (Kind=Kind(0.d0)) :: tau, om, pi, beta
+
+       pi = 3.1415927
+       XKER_p_ph  =  (exp(-tau*om)  + exp(-(beta-tau)*om)) / (pi*(1.d0 + exp( -beta * om ) ) )
+
+     end function XKER_p_ph
+
+
      Real (Kind=Kind(0.d0)) function Back_trans_p(Aom, om, beta)
 
        Implicit None
@@ -394,7 +521,7 @@
      end function BACK_TRANS_T0
 
 
-     Subroutine  Rescale ( XCOV, XQMC,XTAU, Ntau_st, Ntau_en, Tolerance,  Ntau)
+    Subroutine  Rescale ( XCOV, XQMC,XTAU, Ntau_st, Ntau_en, Tolerance,  Ntau)
 
        Implicit none
 
@@ -443,8 +570,27 @@
        XQMC = XQMC_st
        XTAU = XTAU_st
        Deallocate (XCOV_st, XQMC_st,XTAU_st, List )
+       
+    end Subroutine Rescale
 
+    Subroutine  Set_Ker_classic(Xker, Xker_classic, Om_ST,  Om_en, beta,xtau)
+       Implicit  none  
 
+       Real (Kind=Kind(0.d0)), External :: Xker
+       Real (Kind=Kind(0.d0)), INTENT(INOUT), allocatable ::  Xker_classic(:,:)
+       Real (Kind=Kind(0.d0)), INTENT(IN ), allocatable ::  Xtau(:)
+       Real (Kind=Kind(0.d0)), INTENT(IN) :: Om_ST, Om_en, beta
 
+       Integer ::  nw, Ndis, ntau, nt 
+       Real (Kind=Kind(0.d0))  :: Om, Dom
 
-       end Subroutine Rescale
+       Ntau =  size(Xker_classic,1)
+       Ndis =  size(Xker_classic,2)
+       DOM  =  (OM_En -  OM_St)/dble(Ndis)
+       do  nw  = 1,Ndis
+          om =  OM_St +  dble(nw)*dom
+          Do nt  = 1,Ntau
+               Xker_classic(nt,nw)  =  XKER(xtau(nt),om, beta)
+          Enddo
+       enddo
+    end Subroutine Set_Ker_classic

@@ -92,6 +92,8 @@ Checkpoint = .F.            ! Whether to produce dump files, allowing the simula
                             ! to be resumed later on
 Tolerance  = 0.1d0          ! Data points for which the relative error exceeds the
                             ! tolerance threshold will be omitted.
+Stochastic =.true.          ! If  true,  then  stochastic MaxEnt is used
+                            ! If  false, then  classic  MaxEnt is used
 /
 
 &VAR_Hubbard               !! Variables for the specific model

@@ -62,16 +62,16 @@ Module MaxEnt_mod
 
             Open (Unit=50, File="info_Maxent", Status="unknown", position="append")
 
-            Write(50,*) 'N E W   R U N'
-            Write(50,*) '# of data points: ', NTAU
-            Write(6,*) 'N E W   R U N'
+            !Write(50,*) 'N E W   R U N'
+            !Write(50,*) '# of data points: ', NTAU
+            !Write(6,*) 'N E W   R U N'
             ! Set the Default.
             ALPHA = Alpha_st
             DEF  = XMOM1/dble(NOM)
             XLAM = 0.d0
             if ( Present(Default) ) then
                DEF = Default
-               Write(6,*) 'Default is present'
+               !Write(6,*) 'Default is present'
             else
                XQ = 0.d0; XENT= 0.d0; CHISQ = 0.d0
                Call Maximize_Newton( XQMC,  COV, A, XKER, XQ,XENT,CHISQ)
@@ -79,8 +79,8 @@ Module MaxEnt_mod
                   DO
                      XQ = 0.d0; XENT= 0.d0; CHISQ = 0.d0
                      Call Maximize_Newton( XQMC,  COV, A, XKER, XQ,XENT,CHISQ)
-                     Write(50,*) 'Default: ', Alpha, Chisq
-                     Write(6,*) 'Default: ', Alpha, Chisq
+                     !Write(50,*) 'Default: ', Alpha, Chisq
+                     !Write(6,*) 'Default: ', Alpha, Chisq
                      IF (CHISQ .GT. Tol_chi_def*NTAU .AND.  ALPHA.GT.100 )  THEN
                         ALPHA = ALPHA - ALPHA*0.1
                      ELSE
@@ -96,15 +96,15 @@ Module MaxEnt_mod
                      ENDIF
                   ENDDO
                ELSE
-                  Write(6,*) 'Flat Default'
+                  !Write(6,*) 'Flat Default'
                Endif
                !DO NW = 1,NOM
                !   Write(13,*) NW, DEF(NW)
                !ENDDO
-               Write(6,*) 'Default Final: ', Alpha, Chisq
+               !Write(6,*) 'Default Final: ', Alpha, Chisq
 
                DEF  = XMOM1/dble(NOM)
-               Write(6,*) 'Setting the default to a flat default'
+               !Write(6,*) 'Setting the default to a flat default'
             endif
 
             ! Calssic MaxEnt.
@@ -123,14 +123,14 @@ Module MaxEnt_mod
                   CALL CALCPR_ALP(XQMC,  COV, A, XKER,XQ,XENT,PR_ALP,XTRACE)
                   ALPHA_N = -XTRACE/(2.D0*XENT)
                   WRITE(50,*) 'Max at:', ALPHA_N
-                  WRITE(6,*) 'Max at:', ALPHA_N
-                  WRITE(6,*) 'Old_alp', ALPHA
+                  !WRITE(6,*) 'Max at:', ALPHA_N
+                  !WRITE(6,*) 'Old_alp', ALPHA
                   DIFF1 =    ABS(ALPHA_N - ALPHA)
                ENDIF
                CALL SETA(A,XKER)
                CALL SETQ(A,XKER,XQMC, XQ,XENT,CHISQ)
                WRITE(50,2006) ALPHA, XQ,XENT,CHISQ
-               WRITE(6,2006 ) ALPHA, XQ,XENT,CHISQ
+               !WRITE(6,2006 ) ALPHA, XQ,XENT,CHISQ
                DIFF =  ALPHA_N - ALPHA
                IF ( ABS(DIFF) .GT.  0.1*ALPHA ) THEN
                   ALPHA  = ALPHA +  0.1 * ALPHA * DIFF/ABS(DIFF)
@@ -195,9 +195,9 @@ Module MaxEnt_mod
                !Write(6,*) ' Back From SetAH '
                CALL SETF (F, COV, XKER, A, XQMC)
                !Write(6,*) ' Back From SetF '
-               Write(6,*) 'Calling INV'
+               !Write(6,*) 'Calling INV'
                CALL INV(AH, AHINV, DET1)
-               Write(6,*) 'Back Calling INV', Det1(1),Det1(2)
+               !Write(6,*) 'Back Calling INV', Det1(1),Det1(2)
                !CALL INV(AH, AHINV)
                !Write(6,*) ' Back From INV '
                XNORM = 0.D0
@@ -223,12 +223,12 @@ Module MaxEnt_mod
                ENDDO
                NITER = NITER + 1
                !WRITE(6,*) 'Maximize: ', XNORM, NITER
-               IF (XNORM.LT.1.0D-6 .OR. NITER.GE.100) EXIT
+               IF (XNORM.LT.1.0D-6 .OR. NITER.GE.500) EXIT
             ENDDO
             CALL   SETQ(A,XKER,XQMC, XQ,XENT,CHISQ)
 
-            IF (NITER.GE.100) THEN
-               WRITE(50,*) 'Convergence problem:'
+            IF (NITER.GE.500) THEN
+               WRITE(50,*) 'Convergence problem:', Xnorm
             ENDIF
 
             Deallocate (XLAM1, F)
@@ -236,8 +236,6 @@ Module MaxEnt_mod
 
           END Subroutine Maximize_Newton
 
-
-          !  Working HERE
           Subroutine Maximize_Self( XQMC,  COV, A, XKER, XQ,XENT,CHISQ)
 
             ! Sloves F(tau) = 0 with self-consistency.
@@ -282,23 +280,23 @@ Module MaxEnt_mod
                   ENDDO
                   XNORM = XNORM + ( XLAM1(NT) - XLAM(NT) )**2
                ENDDO
-               IF (MOD(NITER,100) .EQ. 0 ) THEN
-                  DO NT = 1,NTAU
-                     Write(6,*) 'Self: ', XLAM(NT), XLAM1(NT)
-                  ENDDO
-               ENDIF
+               !IF (MOD(NITER,100) .EQ. 0 ) THEN
+               !   DO NT = 1,NTAU
+               !      Write(6,*) 'Self: ', XLAM(NT), XLAM1(NT)
+               !   ENDDO
+               !ENDIF
                XNORM =  SQRT(XNORM)/DBLE(NTAU)
                DO NT = 1,NTAU
                   XLAM(NT) = XLAM1(NT)
                ENDDO
                NITER = NITER + 1
-               WRITE(6,*) 'Maximize_Self: ', XNORM, NITER
+               !WRITE(6,*) 'Maximize_Self: ', XNORM, NITER
                IF (XNORM.LT.1.0D-6 .OR. NITER.GE.1000) EXIT
             ENDDO
             CALL  SETQ(A,XKER,XQMC, XQ,XENT,CHISQ)
 
-            IF (NITER.GE.100) THEN
-               WRITE(50,*) 'Convergence problem:'
+            IF (NITER.GE.1000) THEN
+               WRITE(50,*) 'Convergence problem:', XNORM
             ENDIF
 
             Deallocate (XLAM1, GBAR)
@@ -556,9 +554,9 @@ Module MaxEnt_mod
                endif
                if (nt.eq.ntau)  exit
             enddo
-            write(6,*) 'Ntau_eff: ', Ntau_eff
+            !write(6,*) 'Ntau_eff: ', Ntau_eff
 
-            Write(6,*) 'Resizing'
+            !Write(6,*) 'Resizing'
             Allocate ( XQMC_1(Ntau_eff), Cov_1(Ntau_eff,Ntau_eff), Xker_1(Ntau_eff,Nom) )
             do nt = 1,Ntau_eff
                xqmc_1(nt) = xqmc(nt)
