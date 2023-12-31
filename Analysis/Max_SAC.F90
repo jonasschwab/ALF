@@ -130,7 +130,11 @@
 
        dtau = Xtau(2) - Xtau(1)
 
-       Open(unit=50,File='Info_MaxEnt',Status="unknown")
+       If (Stochastic) then 
+          Open(unit=50,File='Info_MaxEnt',Status="unknown")
+       else
+          Open(unit=50,File='Info_MaxEnt_Cl',Status="unknown")
+       endif
        write(50,*) 'Channel      :: ', Channel
        If (Channel == "PH" )  then
           Write(50,*)  'Om_start is set to zero. PH channel corresponds to symmetric data '
@@ -226,7 +230,6 @@
              close(10)
           endif
           Call Set_default(Default,beta,Channel, OM_st, Om_en, xmom1,Default_model_exists)
-          Write(6,*) 'Hi'
        endif
 
       
@@ -290,7 +293,7 @@
              If (Particle_channel_PH)  then
                Call Set_Ker_classic(Xker_p_ph,Xker_classic,Om_st,Om_en,beta,xtau_st)
              else 
-               Call Set_Ker_classic(Xker_p_ph,Xker_classic,Om_st,Om_en,beta,xtau_st)
+               Call Set_Ker_classic(Xker_p,Xker_classic,Om_st,Om_en,beta,xtau_st)
              endif   
              Call  MaxEnt( XQMC, XCOV, A_classic, XKER_classic, Alpha_classic_st, CHISQ ,DEFAULT)
           endif  
@@ -380,7 +383,7 @@
           do  nw  = 1,Ndis
              xom(nw) =  OM_St +  dble(nw)*dom
           enddo
-          Open (Unit = 11,File="Data_out", Status ="unknown")
+          Open (Unit = 11,File="Data_out_cl", Status ="unknown")
           Do Nt = 1,Ntau
              X = 0.d0
              Do nw = 1,Ndis
@@ -388,6 +391,7 @@
              enddo
              Write(11,"(F14.7,2x,F14.7,2x,F14.7,2x,F14.7)")  xtau_st(nt), xqmc_st(nt),  sqrt(xcov_st(nt,nt)), X
           enddo
+          close(11)
           Select Case (Channel)
              Case ("PH")
                 do  nw  = 1,Ndis
@@ -409,7 +413,7 @@
                 Write(error_unit,*) "Channel not yet implemented"
                 error stop 1
              end Select
-          Open (Unit=43,File="Green_Classic", Status="unknown", action="write")
+          Open (Unit=43,File="Green_cl", Status="unknown", action="write")
        endif 
 
        ! Compute the real frequency Green function.

@@ -60,7 +60,7 @@ Module MaxEnt_mod
             ENDDO
 
 
-            Open (Unit=50, File="info_Maxent", Status="unknown", position="append")
+            Open (Unit=50, File="Max_cl_log", Status="unknown")
 
             !Write(50,*) 'N E W   R U N'
             !Write(50,*) '# of data points: ', NTAU
