@@ -40,6 +40,7 @@
 !>
 !
 !--------------------------------------------------------------------
+       Use runtime_error_mod
        Use MaxEnt_stoch_mod
        Use MaxEnt_mod
        use iso_fortran_env, only: output_unit, error_unit
@@ -106,7 +107,7 @@
           READ(30,NML=VAR_Max_Stoch)
        else
           write(error_unit,*) 'No file parameters '
-          error stop 1
+          CALL Terminate_on_error(ERROR_MAXENT,__FILE__,__LINE__)
        endif
        close(30)
        
@@ -149,7 +150,7 @@
          Write(50, "('Bins, Sweeps, Warm :: ',2x,I4,2x,I4,2x,I4)") NBins, NSweeps, Nwarm
          If (N_alpha <= 10 ) then
             Write(error_unit,*) 'Not enough temperatures: N_alpha has to be bigger than 10'
-            error stop 1
+            CALL Terminate_on_error(ERROR_MAXENT,__FILE__,__LINE__)
          Endif
          Write(50, "('N_Alpha, Alpha_st,R:: ',2x,I4,F12.6,2x,F12.6)") N_alpha, alpha_st, R
        else
@@ -195,14 +196,14 @@
           if ( xcov(1,1) < zero )  ntau_st = 2
        Case default
           Write(error_unit,*) "Channel not yet implemented"
-          error stop 1
+          CALL Terminate_on_error(ERROR_MAXENT,__FILE__,__LINE__)
        end Select
        Ntau_old = Ntau
        Call Rescale ( XCOV, XQMC,XTAU, Ntau_st, Ntau_en, Tolerance, NTAU)
        Write(50,"('Data has been rescaled from Ntau  ',  I4,' to ', I4)")  NTAU_old, Ntau
        If ( Ntau <= 4 ) then
           write(error_unit,*) 'Not enough data!'
-          error stop 1
+          CALL Terminate_on_error(ERROR_MAXENT,__FILE__,__LINE__)
        Endif
        If (  nbin_qmc > 2*Ntau .and. N_cov == 0  )   Write(50,*) 'Consider using the covariance. You seem to have enough bins'
        If (  nbin_qmc < 2*Ntau .and. N_cov == 1  )   Write(50,*) 'You do not seem to have enough bins for a reliable estimate of the covariance '
@@ -284,7 +285,7 @@
           endif
        Case default
           Write(error_unit,*) "Channel not yet implemented"
-          error stop 1
+          CALL Terminate_on_error(ERROR_MAXENT,__FILE__,__LINE__)
        end Select
 
        Allocate (xom(Ndis), A(Ndis))
@@ -333,7 +334,7 @@
                    enddo
                 Case default
                    Write(error_unit,*) "Channel not yet implemented"
-                   error stop 1
+                   CALL Terminate_on_error(ERROR_MAXENT,__FILE__,__LINE__)
              end Select
              Write(11,"(F14.7,2x,F14.7,2x,F14.7,2x,F14.7)")  xtau_st(nt), xqmc_st(nt),  sqrt(xcov_st(nt,nt)), xmom1*X
           enddo
@@ -384,7 +385,7 @@
                 enddo
              Case default
                 Write(error_unit,*) "Channel not yet implemented"
-                error stop 1
+                CALL Terminate_on_error(ERROR_MAXENT,__FILE__,__LINE__)
              end Select
           Open (Unit=43,File="Green_cl", Status="unknown", action="write")
        endif 
@@ -596,6 +597,8 @@
 
 
    Subroutine Set_default(Default,beta,Channel, OM_st, Om_en, xmom1,Default_model_exists,Stochastic)
+
+       use runtime_error_mod
        use iso_fortran_env, only: output_unit, error_unit
        
        Implicit none
@@ -647,7 +650,7 @@
          Default =  Default*dom
        case  default
          Write(error_unit,*) "Channel not yet implemented for default model"
-         error stop 1
+         CALL Terminate_on_error(ERROR_MAXENT,__FILE__,__LINE__)
        end Select
        Open (Unit=10,File="Default_used", status="Unknown")
        X = 0.d0

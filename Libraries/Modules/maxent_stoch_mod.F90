@@ -1,6 +1,7 @@
 
 Module MaxEnt_stoch_mod
 
+       Use runtime_error_mod
        Use MyMats
        Use Random_Wrap
        Use Files_mod
@@ -12,11 +13,6 @@ Module MaxEnt_stoch_mod
                                       &   Dx_spectral, Dx_table
        Real (Kind=Kind(0.d0)), allocatable, private :: XQMC1(:)
        Integer, allocatable,  private ::  Phim1_func(:), Phi_func(:)
-       
-       ! You can still optimize a bit for by redefining the Kernel table to:
-       ! xker_table(nt,nw) -> xker_table(nt,nw) / sigma(nt)
-       ! This will save quite a lot of divisions in the
-       ! MC routine. And this is where all the time goes now.
        
        contains
          
@@ -389,7 +385,7 @@ Module MaxEnt_stoch_mod
 
             If ( Size(Default,1) .ne. Ndis )   then 
                write(error_unit,*) 'Default in MaxEnt_stoch has wrong dimensions'
-               error stop 1
+               CALL Terminate_on_error(ERROR_MAXENT,__FILE__,__LINE__)
             endif
             dom = (Om_en_1 -  Om_st_1)/dble(Ndis)
             nw_d = 1
