@@ -101,6 +101,7 @@
 
        NAMELIST /VAR_errors/    N_skip, N_rebin, N_cov,  N_Back, N_auto
 
+       Stochastic = .true. !  This is  the  default
        open(unit=30,file='parameters',status='old',action='read', iostat=io_error)
        if (io_error.eq.0) then
           READ(30,NML=VAR_errors)
