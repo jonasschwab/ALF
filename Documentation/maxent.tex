@@ -86,7 +86,7 @@ In the code,  $n(x)$ is parametrized  by a  set of $N_{\gamma}$ Dirac $\delta$ f
 \begin{equation}
       n(x)  = \sum_{i=1}^{N_{\gamma}} a_{i} \delta \left( x - x_i \right).
 \end{equation}
-The code  samples  $n(x)$ corresponding and   at  the  end,  builds  the    spectral  function:
+The code  samples  $n(x)$ and  at  the  end,  builds  the    spectral  function:
 \begin{equation}
        A(\omega) =  n(x(\omega)) D(\omega). 
 \end{equation}
@@ -99,8 +99,54 @@ required to run the maxent code. Recalling: \texttt{N\_cov = 1} (\texttt{N\_cov 
 
 \paragraph*{The Bayesian approach}
 It is  beyond  the  scope of  this  documentation to provide a  full  account of the   classic Maximum Entropy method,  and  
-the  interested  reader  is  referred  to Refs.~\cite{Jarrell96,Linden95}   for  detailed  accounts.  \red{FA: How  detailed  
-should this  section be?}
+the  interested  reader  is  referred  to Refs.~\cite{Jarrell96,Linden95}   for  detailed  accounts. 
+Bayes theorem  states  that  the  combined   probability  of   events  $X, Y, Z$   ( $P(X,Y,Z)$ )   is   given  by  the 
+probability of   $X$ given $Y, Z$  ($ P(X|Y,Z) $ ) times  the  prior probability of  $Y,Z$   ($P(Y,Z)$).  Let  us  apply  this 
+to  investigate  the   combined  probability of  $A,\alpha$ given  the  combined  Default $ D $  and   Monte-Carlo data  $G$.   The  
+result  reads: 
+\begin{equation}
+P(A,\alpha| G, D) = P(G|A,D,\alpha) P(A|D,\alpha) P(\alpha| D  ) / P(G| D )
+\end{equation} 
+We  will  assume  that  $ D $  and $\alpha$  are  not   correlated,  such  that  $ P(\alpha,D) = P(\alpha) 
+P(D) $.   As  a   consequence,  $ P(\alpha|D)   = P(\alpha) $.  Similarly  if  we  assume that 
+$G$ and $D$  are not  correlated,  then $P(G| D ) =  P(G) $.     In the Bayesian approach,  the   likelihood   
+function  $P(G|A,m,\alpha)$ reads:
+\begin{equation}
+  P(G|A,D,\alpha)  = \frac{1}{(2\pi)^{n/2} \sqrt{\det C }}   e^{ - \chi^2(A)/2}.
+\end{equation} 
+As  apparent  it is  independent on   the  default  and   value  of  $\alpha$.    The entropic  prior  reads:
+\begin{equation}
+    P(A|D,\alpha) =  e^{\frac{1}{\alpha} S(A,D)} \, \, \text{ with } \, \, 
+    S(A,D)  = \int d \omega  \left(  A(\omega) -  D(\omega) -  A(\omega) \log \frac{A(\omega)}{D(\omega)} \right)
+\end{equation}
+Normalization is  insured  by  the  measure ${\cal D} A =  \prod_i \sqrt{\frac{1}{\alpha 2 \pi}} \frac{d A_i}{\sqrt{A_i}}$
+with $A_i =  A(\omega_i) \Delta \omega $.
+
+Putting   everything  together,  we obtain: 
+\begin{equation}
+  P(A,\alpha| G, D)    =   \frac{1}{Z(\alpha)} e^{Q(A,\alpha)}       \, \,  \text{ with } \, \, 
+      Q(A,\alpha) = \frac{1}{\alpha} S(A,D)  - \chi^{2}(A)/2  
+\end{equation}
+and  
+\begin{equation}
+\frac{1}{Z(\alpha)}  = \frac{P(\alpha)}{P(G)}  \frac{1}{(2\pi)^{n/2} \sqrt{\det C }}. 
+\end{equation}
+The  last  piece  of  information we  need,  is  the prior  probability  of $\alpha$.  We could  for  instance 
+choose a  constant,  reflecting the  fact   that we  have  no  prior information.  Alternatively  we  can  use 
+Jeffrey's prior $P(\alpha) =   \alpha $.   This  choice  does  not  lead to  important differences  since  the 
+integration measure already  includes  a  high  power  of  $\alpha$. 
+
+For a given value of $\alpha$, 
+one can maximize  $P(A,\alpha | G, D)  $ with respect to $A$, so as to obtain the
+most probable image, $A^{\star}(\alpha)$.   However this leaves us with the free
+parameter $\alpha$.    
+The probability of $\alpha$  given $ G$  and $D $   reads
+\begin{equation}
+        P(\alpha| G,D) = \int{\cal D}{A} \; \;  P(A, \alpha | G, D).
+\end{equation}
+In the classic Maximum Entropy method, $\alpha $ is chosen so as to maximize
+$ P(\alpha | G,D) $.  Denoting this value of $\alpha$ by $\alpha^{\star}$,   
+the final image produced by the classic Maximum Entropy method is $A^{\star}(\alpha^*)$.
 
 \subsubsection*{Input files} 
 In addition to the aforementioned parameter file, the MaxEnt program requires the output of the  analysis of 
@@ -134,7 +180,7 @@ then  a  flat default model  with  correct  sum rule  is   used.
 
 \subsubsection*{Output files}
 
-The code produces the following output files:
+The code produces the following output files. 
 
 \paragraph*{The stochastic  approach}
 \begin{itemize}
