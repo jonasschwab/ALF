@@ -144,7 +144,7 @@
           Open(unit=50,File='Info_MaxEnt_cl',Status="unknown")
        endif
        write(50,11) 'Channel', Channel
-       If (Channel == "PH" )  then
+       If (str_to_upper(Channel) == "PH" )  then
           Write(50,"(A72)")  'Om_start is set to zero. PH channel corresponds to symmetric data '
           Om_st = 0.d0
        endif
@@ -171,7 +171,7 @@
        pi = acos(-1.d0)
        Ntau_st = 1
        Ntau_en = Ntau
-       Select Case (Channel)
+       Select Case (str_to_upper(Channel))
        Case ("PH")
           xmom1 = pi * xqmc(1)
        Case ("PP")
@@ -248,7 +248,7 @@
        write(50,13) "First Moment",  Xmom1
        write(50,13) "Beta", Beta
 
-       Select Case (Channel)
+       Select Case (str_to_upper(Channel))
        Case ("PH")
           If  (Stochastic)  then
              Call MaxEnt_stoch(XQMC, Xtau, Xcov, Xmom1, XKER_ph, Back_Trans_ph, Beta, &
@@ -326,7 +326,7 @@
           do nt = 1,Ntau
              X = 0.d0
              tau = xtau_st(nt)
-             Select Case (Channel)
+             Select Case (str_to_upper(Channel))
                 Case ("PH")
                    do i = 1,Ngamma
                       X = X + alp_bf(i)*Xker_ph(tau,om_bf(i), beta)
@@ -336,9 +336,15 @@
                       X = X + alp_bf(i)*Xker_pp(tau,om_bf(i), beta)
                    enddo
                 Case ("P")
-                   do i = 1,Ngamma
-                      X = X + alp_bf(i)*Xker_p(tau,om_bf(i), beta)
-                   enddo
+                   If (Particle_channel_PH)  then
+                     do i = 1,Ngamma
+                         X = X + alp_bf(i)*Xker_p_ph(tau,om_bf(i), beta)
+                     enddo
+                  else
+                     do i = 1,Ngamma
+                         X = X + alp_bf(i)*Xker_p(tau,om_bf(i), beta)
+                     enddo
+                  endif
                 Case ("T0")
                    do i = 1,Ngamma
                       X = X + alp_bf(i)*Xker_T0(tau,om_bf(i), beta)
@@ -378,7 +384,7 @@
           Write(50,13) "Final value of  alpha ", 1.d0/Alpha_classic_st
           Write(50,13) "CHISQ" , CHISQ
           close(50)
-          Select Case (Channel)
+          Select Case (str_to_upper(Channel))
              Case ("PH")
                 do  nw  = 1,Ndis
                    A(nw) =  Back_trans_ph(A(nw), xom(nw), beta)
@@ -612,6 +618,7 @@
 
        use runtime_error_mod
        use iso_fortran_env, only: output_unit, error_unit
+       use Files_mod
        
        Implicit none
 
@@ -624,7 +631,7 @@
 
        Ndis = size(Default,1)
        Dom = (OM_en - Om_st)/dble(Ndis)
-       Select Case (Channel)
+       Select Case (str_to_upper(Channel))
        case("P")
          If (.not. Default_model_exists ) Default = Xmom1/(Om_en - Om_st)
          Default = Default*Dom
