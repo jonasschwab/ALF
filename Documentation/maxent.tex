@@ -6,17 +6,25 @@
 
 % !TEX root = doc.tex
 
-If we want to compare the data we obtain from Monte Carlo simulations with experiments, we must extract spectral information from the imaginary-time output.
-This can be achieved through the maximum entropy method (MaxEnt), which generically computes the  image  $A(\omega) $ for a given  data  set $g(\tau) $  and kernel $K(\tau,\omega) $:
+If we want to compare the data we obtain from Monte Carlo simulations with experiments, we must extract spectral
+ information from the imaginary-time output.
+This can be achieved through the maximum entropy method (MaxEnt), which generically computes the  image  $A(\omega) $ 
+for a given  data  set $g(\tau) $  and kernel $K(\tau,\omega) $:
 \begin{equation}
 g(\tau) =  \int_{\omega_\mathrm{start}}^{\omega_\mathrm{end}} \d{\omega} K(\tau,\omega) A(\omega).
 \end{equation} 
-The  ALF package includes a standard implementation of the stochastic MaxEnt, as formulated in the article of K. Beach~\cite{Beach04a}, in the module \texttt{Libraries/Modules/\allowbreak{}maxent\_stoch\_mod.F90}. Its wrapper is found in \texttt{Analysis/Max\_SAC.F90} and the Green function is read from the
-%file \texttt{g\_dat}, corresponding to the 
-output of the \texttt{cov\_tau.F90} analysis program.
+The  ALF package includes a standard implementation of the stochastic MaxEnt, as formulated in the article of 
+K. Beach~\cite{Beach04a}, in the module \texttt{Libraries/Modules/\allowbreak{}maxent\_stoch\_mod.F90}. 
+It  also  supports  an  implementation of the  Bayesian  based  classic  maximum entropy  method  as  
+formulated  in  Refs.~\cite{Jarrell96,Linden95}, in the 
+module \texttt{Libraries/Modules/\allowbreak{}maxent\_mod.F90} 
+Its wrapper is found in \texttt{Analysis/Max\_SAC.F90} and the Green function is read from the
+file \texttt{g\_dat}, produced  by the  analysis  program   \texttt{Analysis/ana.out} analysis program.
+The  logical  variable  \texttt{Stochastic}   specified  in  the  \texttt{parameters} file  toggles between 
+the  two  analytical  continuation  approaches.
 
-In the next section we provide a quick guide on how this facility can be used, followed by sections with more detailed information.
-
+In the next section we provide a quick guide on how this facility can be used, followed by 
+sections with more detailed information.
 
 \subsection{Quick Start}
 \label{sec:quick_maxent}
@@ -33,32 +41,126 @@ In the next section we provide a quick guide on how this facility can be used, f
 		\lstinline[style=bash]{$ALF_DIR/Analysis/Max_SAC.out}
 \end{itemize}
 
-For many purposes it is practical to script some of the steps above, and an example of such a script can be found in \texttt{\$ALF\_DIR/Scripts\_and\_Parameters\_files/Spectral.sh}.
+For many purposes it is practical to script some of the steps above, and an example of such a script can be 
+found in \texttt{\$ALF\_DIR/Scripts\_and\_Parameters\_files/Spectral.sh}.
 
 
 \subsection{General setup}
 
-The stochastic MaxEnt is essentially a parallel-tempering Monte Carlo simulation.  For a discrete set of $\tau_i$ points,  $i \in 1 \cdots n $, the goodness-of-fit functional, which we take as the energy reads
+\paragraph*{The stochasic approach}
+The stochastic MaxEnt is essentially a parallel-tempering Monte Carlo simulation.  For a discrete set 
+of $\tau_i$ points,  $i \in 1 \cdots n $, the goodness-of-fit functional, which we take as the energy reads
 \begin{equation}
   \chi^{2}(A) =  \sum_{i,j=1}^{n}   \left[ g(\tau_i)  -  \overline{g(\tau_i)} \right] C^{-1}(\tau_i,\tau_j) \left[    g(\tau_j)  -  \overline{g(\tau_j)} \right] ,
 \end{equation}
 with $ \overline{g(\tau_i)} =\int \d{\omega} K(\tau_{i},\omega)  A(\omega)$ and  $C$ the covariance matrix. 
 The set of $N_{\alpha}$ inverse temperatures considered in the parallel tempering is given by
-$ \alpha_m = \alpha_{st}  R^{m}$, for $m = 1 \cdots N_{\alpha} $ and a constant $R$. The phase space corresponds to all possible spectral functions satisfying a given sum rule and the required positivity.  Finally, the partition function reads
-$Z =  \int\mathcal{D}\!A\; e^{-\alpha \chi^{2}(A)}$ \cite{Beach04a}, such that for a given ``inverse temperature'' $\alpha$, the image is given by: 
+$ \alpha_m = \alpha_{st}  R^{m}$, for $m = 1 \cdots N_{\alpha} $ and a constant $R$.
+The  default model  is, $D(\omega)$,  is   required  to  have  the  same  sum-rule  as  the  spectral  function,
 \begin{equation}
-  \langle A ( \omega) \rangle  =   \frac{\int\mathcal{D}\!A\; e^{-\alpha \chi^{2}(A)}  A(\omega) }{ \int\mathcal{D}\!A\; e^{-\alpha \chi^{2}(A)}  }.
+  \int \d{\omega} D(\omega) =  \int \d{\omega} A(\omega) =  M_0. 
 \end{equation}
-In the code, the spectral function is parametrized  by a  set of $N_{\gamma}$ Dirac $\delta$ functions: 
+Since   the    default  model is  a  positive    function,  the    function 
 \begin{equation}
-      A(\omega)  = \sum_{i=1}^{N_{\gamma}} a_{i} \delta \left( \omega - \omega_i \right).
+     x(\omega)  =   \frac{1}{M_0}\int_{-\infty}^{\omega} \d{\omega'}  D(\omega')  
+\end{equation}
+is  invertible  (provided  that  the  default model  does not  vanish  in the considered frequency  range) 
+and   takes  values  $ x \in \left[ 0,1 \right] $. Consder 
+\begin{equation}
+      n(x)   =  \frac{A(\omega^{-1}(x))}{D(\omega^{-1}(x))},
+\end{equation}
+then 
+\begin{equation}
+    \int_{0}^{1} \d{x} n(x)  = 1   \, \,  \text{ and } \, \,  
+    \overline{g(\tau)} =\int_{0}^{1} \d{x} K(\tau,\omega^{-1}(x))  n(x).
+\end{equation}
+The phase space corresponds to 
+all possible spectral functions $n(x)$ satisfying a given sum rule and the required positivity. 
+ Finally, the partition function reads
+$Z =  \int\mathcal{D}\!n\; e^{-\alpha \chi^{2}(n)}$ \cite{Beach04a}, such that for a given ``inverse temperature'' $\alpha$, the image is given by: 
+\begin{equation}
+  \langle n (x ) \rangle  =   \frac{\int\mathcal{D}\!n\; e^{-\alpha \chi^{2}(n)}  n(x) }
+         { \int\mathcal{D}\!n\; e^{-\alpha \chi^{2}(n)}  }.
+\end{equation}
+In the code,  $n(x)$ is parametrized  by a  set of $N_{\gamma}$ Dirac $\delta$ functions: 
+\begin{equation}
+      n(x)  = \sum_{i=1}^{N_{\gamma}} a_{i} \delta \left( x - x_i \right).
+\end{equation}
+The code  samples  $n(x)$ and  at  the  end,  builds  the    spectral  function:
+\begin{equation}
+       A(\omega) =  n(x(\omega)) D(\omega). 
 \end{equation}
 To produce a histogram of  $ A(\omega) $ we divide  the frequency range in \texttt{Ndis} intervals. 
 
-Besides the parameters included in the namelist \texttt{VAR\_Max\_Stoch} set in the file \texttt{parameters} (see Sec.~\ref{sec:files}), also the variable \texttt{N\_cov}, from the namelist \texttt{VAR\_errors}, is required to run the maxent code. Recalling: \texttt{N\_cov = 1} (\texttt{N\_cov = 0}) sets that the covariance will (will not) be taken into account.
+Besides the parameters included in the namelist \texttt{VAR\_Max\_Stoch} set in the file \texttt{parameters} 
+(see Sec.~\ref{sec:files}), also the variable \texttt{N\_cov}, from the namelist \texttt{VAR\_errors}, is 
+required to run the maxent code. Recalling: \texttt{N\_cov = 1} (\texttt{N\_cov = 0}) sets that the covariance will
+(will not) be taken into account.
+
+\paragraph*{The Bayesian approach}
+It is  beyond  the  scope of  this  documentation to provide a  full  account of the   classic Maximum Entropy method,  and  
+the  interested  reader  is  referred  to Refs.~\cite{Jarrell96,Linden95}   for  detailed  accounts. 
+Bayes theorem  states  that  the  combined   probability  of   events  $X, Y, Z$   ( $P(X,Y,Z)$ )   is   given  by  the 
+probability of   $X$ given $Y, Z$  ($ P(X|Y,Z) $ ) times  the  prior probability of  $Y,Z$   ($P(Y,Z)$).  Let  us  apply  this 
+to  investigate  the   combined  probability of  $A,\alpha$ given  the  combined  Default $ D $  and   Monte-Carlo data  $G$.   The  
+result  reads: 
+\begin{equation}
+P(A,\alpha| G, D) = P(G|A,D,\alpha) P(A|D,\alpha) P(\alpha| D  ) / P(G| D )
+\end{equation} 
+We  will  assume  that  $ D $  and $\alpha$  are  not   correlated,  such  that  $ P(\alpha,D) = P(\alpha) 
+P(D) $.   As  a   consequence,  $ P(\alpha|D)   = P(\alpha) $.  Similarly  if  we  assume that 
+$G$ and $D$  are not  correlated,  then $P(G| D ) =  P(G) $.     In the Bayesian approach,  the   likelihood   
+function  $P(G|A,m,\alpha)$ reads:
+\begin{equation}
+  P(G|A,D,\alpha)  = \frac{1}{(2\pi)^{n/2} \sqrt{\det C }}   e^{ - \chi^2(A)/2}.
+\end{equation} 
+As  apparent  it is  independent on   the  default  and   value  of  $\alpha$.    The entropic  prior  reads:
+\begin{equation}
+    P(A|D,\alpha) =  e^{\frac{1}{\alpha} S(A,D)} \, \, \text{ with } \, \, 
+    S(A,D)  = \int d \omega  \left(  A(\omega) -  D(\omega) -  A(\omega) \log \frac{A(\omega)}{D(\omega)} \right)
+\end{equation}
+Normalization is  insured  by  the  measure ${\cal D} A =  \prod_i \sqrt{\frac{1}{\alpha 2 \pi}} \frac{d A_i}{\sqrt{A_i}}$
+with $A_i =  A(\omega_i) \Delta \omega $.
+
+Putting   everything  together,  we obtain: 
+\begin{equation}
+  P(A,\alpha| G, D)    =   \frac{1}{Z(\alpha)} e^{Q(A,\alpha)}       \, \,  \text{ with } \, \, 
+      Q(A,\alpha) = \frac{1}{\alpha} S(A,D)  - \chi^{2}(A)/2  
+\end{equation}
+and  
+\begin{equation}
+\frac{1}{Z(\alpha)}  = \frac{P(\alpha)}{P(G)}  \frac{1}{(2\pi)^{n/2} \sqrt{\det C }}. 
+\end{equation}
+The  last  piece  of  information we  need,  is  the prior  probability  of $\alpha$.  We could  for  instance 
+choose a  constant,  reflecting the  fact   that we  have  no  prior information.  Alternatively  we  can  use 
+Jeffrey's prior $P(\alpha) =   \alpha $.   This  choice  does  not  lead to  important differences  since  the 
+integration measure already  includes  a  high  power  of  $\alpha$. 
+
+For a given value of $\alpha$, 
+one can maximize  $P(A,\alpha | G, D)  $ with respect to $A$, so as to obtain the
+most probable image, $A^{\star}(\alpha)$.   However this leaves us with the free
+parameter $\alpha$.    
+The probability of $\alpha$  given $ G$  and $D $   reads
+\begin{equation}
+        P(\alpha| G,D) = \int{\cal D}{A} \; \;  P(A, \alpha | G, D).
+\end{equation}
+In the classic Maximum Entropy method, $\alpha $ is chosen so as to maximize
+$ P(\alpha | G,D) $.  Denoting this value of $\alpha$ by $\alpha^{\star}$,   
+the final image produced by the classic Maximum Entropy method is $A^{\star}(\alpha^*)$.
 
 \subsubsection*{Input files} 
-In addition to the aforementioned parameter file, the MaxEnt program requires the output of the  analysis of the time-displaced functions. The program \texttt{Anaylsis/ana.out} (see Sec.~\ref{sec:analysis}) generates, for each $k$-point, a directory named   \texttt{Variable\_name\_kx\_ky}.  In this directory  the file \texttt{g\_kx\_ky} contains the  required information for the MaxEnt code, which is formatted as follows:
+
+The parameters for the  Maximum entropy are  listed in the  \texttt{parameters}  file  detailed in 
+Sec.~\ref{sec:input}.  In the namespace   \texttt{VAR\_errors} the  variable  \texttt{N\_Cov} triggers  
+the  use  of the covariance  matrix,  and  in the  namespace \texttt{VAR\_Max\_Stoch}   the   variable 
+\texttt{Stochastic} toggles  between  the  stochastic  and  classic analytical continuation  schemes.  The 
+reader is  referred  to Sec.~\ref{sec:input}  for a  complete  description of the parameters. 
+
+
+In addition to the aforementioned parameter file, the MaxEnt program requires the output of the  analysis of 
+the time-displaced functions. The program \texttt{Anaylsis/ana.out} (see Sec.~\ref{sec:analysis}) generates, 
+for each $k$-point, a directory named   \texttt{Variable\_name\_kx\_ky}.  In this directory  
+the file \texttt{g\_dat} contains the  required information for the MaxEnt code, which is formatted as follows:
 \begin{alltt}
 <# of tau-points>  <# of bins >  <beta>  <Norb>  <Channel>
 do tau = 1, # of tau-points
@@ -71,10 +173,24 @@ do tau1 = 1, # of tau-points
 enddo
 \end{alltt}
 
+The  specification of the  default model is optional.   If the file  \texttt{Default}  exists  then this  default  will be   used.   The  format 
+of  the input is identical  to that if  the output file   \texttt{Green} containing  the spectral function (see  below). Hence  
+the  result of  one  run  can  be  used  as  a default model   for  another  run.  This turns out  to be  very  useful
+when  carrying out  temperature  scans.  Alternatively,  the    default  model  can be  specified  as 
+\begin{alltt}
+do om = 1, # of  frequencies
+  read  om, D(om)
+enddo
+\end{alltt}
+The  code  will  automatically  detect  one of the  two aforementioned formats. If  no  default  is  provided, 
+then  a  flat default model  with  correct  sum rule  is   used.    
+
+
 \subsubsection*{Output files}
 
-The code produces the following output files:
+The code produces the following output files. 
 
+\paragraph*{The stochastic  approach}
 \begin{itemize}
 \item The files  \texttt{Aom\_n} contains the average spectral function at inverse temperature  $ \alpha_n $. This corresponds to
 $  \langle A_n(\omega) \rangle =   \frac{1}{Z}   \int \mathcal{D}\!A(\omega) \; e^{-\alpha_n \chi^{2}(A)  } A(\omega). $
@@ -94,14 +210,31 @@ The first column of the  \texttt{Green}  file is a place holder for post-process
 
 \item  \texttt{best\_fit}  gives the values of $a_i$ and $\omega_i$   (recall that $ A(\omega)  = \sum_{i=1}^{N_{\gamma}} a_{i} \delta \left( \omega - \omega_i \right)$) corresponding to the last configuration of the  lowest temperature run.
 
-\item The file \texttt{data\_out} facilitates crosschecking. It lists $\tau$,  $g(\tau)$, $\Delta g(\tau)$, and $\int \d \omega  K(\tau, \omega) A(\omega)$, where the image corresponds to the best fit (i.e. the lowest temperature). This data should give an indication of how good the fit actually is.  Note that  \texttt{data\_out} contains only the data points that have  passed the tolerance test. 
+\item The file \texttt{data\_out} facilitates crosschecking. 
+It lists $\tau$,  $g(\tau)$, $\Delta g(\tau)$, and $\int \d \omega  K(\tau, \omega) A(\omega)$, where the image 
+corresponds to the best fit (i.e. the lowest temperature). This data should give an indication of how good the fit actually is.
+Note that  \texttt{data\_out} contains only the data points that have  passed the tolerance test. 
 
 \item Two dump files are also generated, \texttt{dump\_conf} and \texttt{dump\_Aom}. Since the MaxEnt is a Monte Carlo code, it is possible to improve the data by continuing a previous simulation. The data in the dump files allow you to do so. These files are only generated if the variable \texttt{checkpoint} is set to \path{.true.}. 
 
+\item The  file \texttt{Info\_MaxEnt} lists a summary   used parameters  and  best $\chi^2$.  
+
+
 \end{itemize}
 
-The essential question is: Which image should one use? There is no ultimate answer to this question in the context of the stochastic MaxEnt. The only rule of thumb is to consider temperatures for which the \( \chi^2 \) is  comparable to the number of data points.
+The essential question is: Which image should one use? There is no ultimate answer to this question in the 
+context of the stochastic MaxEnt. The only rule of thumb is to consider temperatures for which the \( \chi^2 \) 
+is  comparable to the number of data points.
 
+\paragraph*{The Bayesian approach}
+The  output   for the classic  MaxEnt  contains  the  file  \texttt{Data\_out\_cl},  the   image \texttt{Green\_cl}  as  
+well  as  a  summary  of the  parameter  used in the  file  \texttt{Info\_MaxEnt\_cl}.   The  format  od  these  files 
+does  not  differ  from the   stochastic  maxent  code. 
+
+\paragraph*{Scripts}
+In the  directory  \texttt{Scripts\_and\_Parameters\_files} there  is  a  shell  script  \texttt{Spectral.sh} that can  help  
+for  the  running of  the code,  and  production of  plots.   The   included  shell script produces  the  plots of  Fig.~\ref{Fig:Spectral1D}, 
+and  will have to  be  adapted  (i.e.  set  of  k-points)   for  different  system  sizes.
 
 \subsection{Single-particle quantities: \texttt{Channel=P}}
 For the single-particle Green function, 
@@ -251,7 +384,12 @@ To conclude this section, we show the example of the one-dimensional Hubbard mod
 \center
 \includegraphics[width=\textwidth,clip]{Spectral_1D.pdf}
 
-\caption{Dynamics of the one-dimensional half-filled Hubbard model  on a 46-site chain, with U/t=4 and $\beta t = 10$.  (a) Dynamical charge structure factor, (b) single particle spectral function and (c) dynamical spin structure factor.  Data obtained using the pyALF python script 
- \href{https://git.physik.uni-wuerzburg.de/ALF/ALF/-/blob/\ALFbranch/Documentation/Figures/MaxEnt/Hubbard_1D.py}{\texttt{Hubbard\_1D.py}}, considering 400 bins of 200 sweeps each and taking into account the covariance matrix for the MaxEnt.  The parameters for the MaxEnt  that differ from the default values are also listed in the python script.}
+\caption{Dynamics of the one-dimensional half-filled Hubbard model  on a 46-site chain, with U/t=4 and $\beta t = 10$.  
+The  top  (bottom) panels   correspond  to  stochastic (Classic) Maxent runs.  
+(a,d) Dynamical charge structure factor, (b,e) single particle spectral function and (c,f) dynamical spin structure factor. 
+ Data obtained using the pyALF python script 
+ \href{https://git.physik.uni-wuerzburg.de/ALF/ALF/-/blob/\ALFbranch/Documentation/Figures/MaxEnt/Hubbard_1D.py}
+ {\texttt{Hubbard\_1D.py}}, considering 400 bins of 200 sweeps each and taking into account the covariance matrix for
+  the MaxEnt.  The parameters for the MaxEnt  that differ from the default values are also listed in the python script.}
         \label{Fig:Spectral1D}
 \end{figure}
