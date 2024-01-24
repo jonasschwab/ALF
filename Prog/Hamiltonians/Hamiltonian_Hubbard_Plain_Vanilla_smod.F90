@@ -491,7 +491,7 @@
           Integer, Intent(In) :: Ltau
           Integer    ::  i, N, Nt
           Character (len=64) ::  Filename
-          Character (len=2)  ::  Channel
+          Character (len=4)  ::  Channel
 
 
           ! Scalar observables
@@ -546,7 +546,7 @@
                 case (3)
                    Channel = 'PH'; Filename = "SpinXY"
                 case (4)
-                   Channel = 'PH'; Filename = "SpinT"
+                   Channel = 'P_PH'; Filename = "SpinT"
                 case (5)
                    Channel = 'PH'; Filename = "Den"
                 case default
