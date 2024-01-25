@@ -65,7 +65,7 @@
              Implicit none
              Real (Kind=Kind(0.d0)), INTENT(INOUT), allocatable ::  Default(:)
              Real (Kind=Kind(0.d0)), INTENT(IN) ::  beta, xmom1,  Om_st,  Om_en
-             Character (Len=4), INTENT(IN)      :: Channel
+             Character (Len=*), INTENT(IN)      :: Channel
              Logical,  INTENT(IN)               :: Default_model_exists, Stochastic
           End Subroutine Set_default
        end Interface
@@ -85,7 +85,7 @@
        Integer                :: N_skip, N_rebin, N_Back, N_auto, Norb
        Real (Kind=Kind(0.d0)) :: OM_st, OM_en,  alpha_st, R, Tolerance
        Logical                :: Checkpoint,  Stochastic, Default_model_exists, Particle_channel_PH
-       Character (Len=4)      :: Channel
+       Character (Len=:), allocatable :: Channel
        Character (Len=1)      :: Char, Char1
        ! Space  for classic MaxEnt
        Real (Kind=Kind(0.d0)), allocatable ::  Xker_classic(:,:),  A_classic(:),  Default(:)
@@ -614,7 +614,7 @@
 
        Real (Kind=Kind(0.d0)), INTENT(INOUT), allocatable ::  Default(:)
        Real (Kind=Kind(0.d0)), INTENT(IN) ::  beta, xmom1,  Om_st,  Om_en
-       Character (Len=4), INTENT(IN)      :: Channel
+       Character (Len=*), INTENT(IN)      :: Channel
        Logical,  INTENT(IN)               :: Default_model_exists, Stochastic
        Integer :: Ndis, Nw
        Real (Kind = Kind(0.d0)) ::   Dom, X, Om,  Zero = 1.D-8

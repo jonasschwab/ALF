@@ -130,7 +130,7 @@
 !> \verbatim
 !>  Unit cell. Only gets linked, needs attribute target or pointer.
 !> \endverbatim
-!> @param [IN] Channel, Character(len=:)
+!> @param [IN] Channel, Character(len=*)
 !> \verbatim
 !>  MaxEnt channel. Only relevant for time displaced observables.
 !> \endverbatim

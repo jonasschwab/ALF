@@ -706,7 +706,7 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
       Type (Lattice)   :: Latt
       Type (Unit_cell) :: Latt_unit
       real    (Kind=Kind(0.d0)):: dtau
-      Character (len=4)     :: Channel 
+      Character (len=:), allocatable :: Channel 
       Integer :: i
 
       i = len(trim(name_obs)) - 4
