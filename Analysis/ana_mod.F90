@@ -850,7 +850,7 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
             write(command, '("mkdir -p ",A,"_",F4.2,"_",F4.2)') trim(name_obs), Xk_p(1,n), Xk_p(2,n)
             CALL EXECUTE_COMMAND_LINE(command)
             Open (Unit=10, File=File_out, status="unknown")
-            Write(10, '(2(I11), E26.17E3, I11, A5)') &
+            Write(10, '(2(I11), E26.17E3, I11, " ", A)') &
                   & Lt_eff, nbins/N_rebin, real(lt-1,kind(0.d0))*dtau, Latt_unit%Norb, trim(Channel)
             do nt = 1, LT_eff
                Write(10, '(3(E26.17E3))') &
@@ -887,7 +887,7 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
       write(command, '("mkdir -p ",A,"_R0")') trim(name_obs)
       CALL EXECUTE_COMMAND_LINE(command)
       Open (Unit=10,File=File_out,status="unknown")
-      Write(10, '(2(I11), E26.17E3, I11, A5)') &
+      Write(10, '(2(I11), E26.17E3, I11, " ", A)') &
             & LT_eff, nbins/N_rebin, real(lt-1,kind(0.d0))*dtau, Latt_unit%Norb, trim(Channel)
       do nt = 1, LT_eff
          Write(10, '(3(E26.17E3))') &

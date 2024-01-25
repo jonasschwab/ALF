@@ -87,6 +87,7 @@
        Logical                :: Checkpoint,  Stochastic, Default_model_exists, Particle_channel_PH
        Character (Len=:), allocatable :: Channel
        Character (Len=1)      :: Char, Char1
+       Character (len=64)     :: str_temp
        ! Space  for classic MaxEnt
        Real (Kind=Kind(0.d0)), allocatable ::  Xker_classic(:,:),  A_classic(:),  Default(:)
 
@@ -115,7 +116,8 @@
        INQUIRE(FILE="Default", EXIST=Default_model_exists)
 
        open (unit=10,File="g_dat", status="unknown")
-       read(10,*)  ntau, nbin_qmc, Beta, Norb, Channel
+       read(10,*)  ntau, nbin_qmc, Beta, Norb,  str_temp
+       Channel  = trim(str_temp)
        Allocate ( XCOV(NTAU,NTAU), XQMC(NTAU),XTAU(NTAU) )
        XCOV  = 0.d0
        Do nt = 1,NTAU
@@ -194,7 +196,7 @@
           Ntau_st = 1
           if ( xcov(1,1) < zero )  ntau_st = 2
        Case default
-          Write(error_unit,*) "Channel not yet implemented" // "'" // Channel // "'"
+          Write(error_unit,*) "Channel '" // Channel // "' not yet implemented"
           CALL Terminate_on_error(ERROR_MAXENT,__FILE__,__LINE__)
        end Select
        Ntau_old = Ntau
@@ -283,7 +285,7 @@
              Call  MaxEnt( XQMC, XCOV, A_classic, XKER_classic, Alpha_classic_st, CHISQ ,DEFAULT)
           endif
        Case default
-          Write(error_unit,*) "Channel not yet implemented", Channel
+          Write(error_unit,*) "Channel '" // Channel // "' not yet implemented"
           CALL Terminate_on_error(ERROR_MAXENT,__FILE__,__LINE__)
        end Select
 
@@ -336,7 +338,7 @@
                       X = X + alp_bf(i)*Xker_T0(tau,om_bf(i), beta)
                    enddo
                 Case default
-                   Write(error_unit,*) "Channel not yet implemented", Channel
+                   Write(error_unit,*) "Channel '" // Channel // "' not yet implemented"
                    CALL Terminate_on_error(ERROR_MAXENT,__FILE__,__LINE__)
              end Select
              Write(11,"(F14.7,2x,F14.7,2x,F14.7,2x,F14.7)")  xtau_st(nt), xqmc_st(nt),  sqrt(xcov_st(nt,nt)), xmom1*X
@@ -392,7 +394,7 @@
                    A(nw) =  Back_trans_T0(A(nw), xom(nw), beta)
                 enddo
              Case default
-                Write(error_unit,*) "Channel not yet implemented", Channel
+                Write(error_unit,*) "Channel '" // Channel // "' not yet implemented"
                 CALL Terminate_on_error(ERROR_MAXENT,__FILE__,__LINE__)
              end Select
           Open (Unit=43,File="Green_cl", Status="unknown", action="write")
@@ -658,7 +660,7 @@
          Default =  Default*Xmom1/X
          Default =  Default*dom
        case  default
-         Write(error_unit,*) "Channel not yet implemented for default model", Channel
+         Write(error_unit,*) "Channel '" // Channel // "' for  default model not yet implemented"
          CALL Terminate_on_error(ERROR_MAXENT,__FILE__,__LINE__)
        end Select
        Open (Unit=10,File="Default_used", status="Unknown")
