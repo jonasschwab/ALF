@@ -3,6 +3,17 @@
 ## ALF 2.6
 ALF 2.6  released  on 2023-??-??
 
+### 2024-25-01    Both  Classic MaxEnt  and  Stochastic  analytical continuation are  available <br>
+
+Author:  J.Schwab and F. Assaad   Merge requests:    
+
+1. Both  approaches  allow  to  specify a  default model
+
+2. To toggle  between the  Stochastic  and Classic approaches  a  new  logical variable,   Stochastic, has  been  introduced  in  VAR_Max_Stoch  name  space.  The  default  value  is Stochastic=.True. such that the  code  functions as  in the previous  releases.
+
+3. There  is a  new  channel index  available P_PH for  single  particle  Green  functions  that are   particle-hole  symmetric. 
+
+
 ### 2023-14-08    Hubbard  Stratonovich  fields  have be  updated  to  complex 
 
 Author:  F. Assaad
