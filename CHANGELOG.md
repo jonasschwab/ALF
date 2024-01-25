@@ -5,7 +5,8 @@ ALF 2.6  released  on 2023-??-??
 
 ### 2024-25-01    Both  Classic MaxEnt  and  Stochastic  analytical continuation are  available <br>
 
-Author:  J.Schwab and F. Assaad   Merge requests:    
+Author:  J.Schwab and F. Assaad   <br>
+Merge requests: !190 and !194
 
 1. Both  approaches  allow  to  specify a  default model
 
