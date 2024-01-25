@@ -264,6 +264,25 @@ Note that for each  configuration of fields we have $ \langle  \langle \hat{c}^{
 \langle \langle \hat{c}^{\phantom\dagger}_{k} (\tau=\beta)  \hat{c}^{\dagger}_{k} (0)   \rangle \rangle_{C} = 
 \langle \langle \big\{ \hat{c}^{\phantom\dagger}_{k},   \hat{c}^{\dagger}_{k}    \big\} \rangle \rangle_{C}   = 1$, hence, if both  the $\tau=0$ and $\tau=\beta$ data points are included, the covariance matrix will have a zero eigenvalue and the $\chi^{2}$ measure is not defined. Therefore, for the particle channel the program omits the $\tau=\beta$ data point. There are special  particle-hole symmetric  cases where the $\tau=0$ data point shows no  fluctuations -- in such cases the code omits the $\tau=0$ data point as well.
 
+\subsection{Single-particle quantities  with particle-hole  symmetry: \texttt{Channel=P\_PH}}
+
+Assume   that  the  single  particle  Green  function  has an additional  symmetry,  
+$G(\bullet,\tau) =  G(\bullet,\beta - \tau )$  where $\bullet$ is a placeholder  for   a momentum  or  
+real-space    index.   Then   one  can  use  the \texttt{Channel=P\_PH}  tag.  In this  case   the analysis 
+will average  over  $G(\bullet,\tau)$  and $ G(\bullet,\beta - \tau )$    to  provide  an  improved  estimator, 
+and  the   output  files  of the  analysis, \texttt{g\_dat},  will  contain  data  with  $\tau$  in  the  
+range  $\tau  \subset \left[ 0, \beta \right] $.  As a   consequence  of  the  particle   hole  symmetry  
+the  spectral  function is an  even  function of the frequency.   For  this  channel   we    constrain
+the  frequency  range  to  $\omega  \subset \left[ 0, \infty \right] $  to  obtain:
+\begin{equation}
+	\langle \hat{c}^{\phantom\dagger}_{\bullet} (\tau)  \hat{c}^{\dagger}_{\bullet} (0)   \rangle   = 
+     \int_{0}^{\infty} d \omega  
+     \underbrace{\left[ K_p(\tau,\omega) + K_p(\tau,-\omega) \right] }_{\equiv K_{p\_ph}(\tau,\omega)} 
+     A_p(\bullet, \omega).
+\end{equation}
+The  above  defines  the  kernel  for this   channel.   If this channel  is  specified in the  data
+file,   then  the lower  bound  of the  frequency  range will  be  set  to  zero by the program. 
+
 \subsection{Particle-hole quantities:  \texttt{Channel=PH}}
 
 \subsubsection*{Imaginary-time formulation}
