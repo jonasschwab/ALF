@@ -411,7 +411,12 @@
           om = xom(nw)
           do nwp = 1,Ndis
              omp = xom(nwp)
-             Z = Z + A(nwp)/cmplx( om -  omp, delta, kind(0.d0))
+             If  (str_to_upper(Channel) == "P_PH" .and.  omp > 0.00001d0  )  then 
+               Z = Z + A(nwp)/cmplx(  om -  omp, delta, kind(0.d0)) &
+                   & + A(nwp)/cmplx(  om +  omp, delta, kind(0.d0)) 
+            else
+               Z = Z + A(nwp)/cmplx( om -  omp, delta, kind(0.d0))
+            endif
           enddo
           Z = Z * dom
           x  = x  - Aimag(Z)/pi
