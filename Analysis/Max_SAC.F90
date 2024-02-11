@@ -359,7 +359,7 @@
           DOM  =  (OM_En -  OM_St)/dble(Ndis)
           A =  A_classic/Dom
           do  nw  = 1,Ndis
-             xom(nw) =  OM_St +  dble(nw)*dom
+             xom(nw) =  OM_St +  dble(nw-1)*dom
           enddo
           Open (Unit = 11,File="Data_out_cl", Status ="unknown")
           Do Nt = 1,Ntau
@@ -412,7 +412,12 @@
           om = xom(nw)
           do nwp = 1,Ndis
              omp = xom(nwp)
-             Z = Z + A(nwp)/cmplx( om -  omp, delta, kind(0.d0))
+             If  (str_to_upper(Channel) == "P_PH" .and.  omp > 0.00001d0  )  then 
+               Z = Z + A(nwp)/cmplx(  om -  omp, delta, kind(0.d0)) &
+                   & + A(nwp)/cmplx(  om +  omp, delta, kind(0.d0)) 
+            else
+               Z = Z + A(nwp)/cmplx( om -  omp, delta, kind(0.d0))
+            endif
           enddo
           Z = Z * dom
           x  = x  - Aimag(Z)/pi
