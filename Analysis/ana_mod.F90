@@ -735,10 +735,10 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
       Real    (Kind=Kind(0.d0))             , intent(in) :: dtau
       Character (len=2)                     , intent(in) :: Channel
 
-      Logical :: PartHole,  L_Back,  Extended_Zone = .false. 
+      Logical :: PartHole, L_Back, Extended_Zone
       Character (len=64) :: File_out, command,  xk1_str,  xk2_str 
       Real    (Kind=Kind(0.d0)), parameter :: Zero=1.D-8
-      Integer :: N_skip, N_rebin, N_Cov, N_Back, N_auto=0,  N_BZ_Zones =  1 
+      Integer :: N_skip, N_rebin, N_Cov, N_Back, N_auto, N_BZ_Zones
       Integer :: Nbins, LT, Lt_eff,  n_mk
       Integer :: nb, no, no1, no2, n,i, nt, nt1, ierr, Norb,  NBZ_1,  NBZ_2
       Complex (Kind=Kind(0.d0)) :: Z, Zmean, Zerr
@@ -750,18 +750,19 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
       Complex (Kind=Kind(0.d0)), allocatable :: Xmean(:), Xcov(:,:),  Xmean_st(:),  Xerr_st(:)
 
 
-      NAMELIST /VAR_errors/ n_skip, N_rebin, N_Cov, N_Back, N_auto, N_BZ_Zones,  Extended_Zone
+      NAMELIST /VAR_errors/ n_skip, N_rebin, N_Cov, N_Back, N_auto, N_BZ_Zones, Extended_Zone
 
       PartHole = .false.
       if(Channel == 'PH') PartHole = .true.
 
-      if (.not. Extended_Zone )   N_BZ_Zones = 1 
       
       N_skip  = 1
       N_rebin = 1
       N_Back  = 1
       N_auto  = 0
       N_Cov   = 0
+      Extended_Zone = .false.
+      N_BZ_Zones = 1
       OPEN(UNIT=5,FILE='parameters',STATUS='old',ACTION='read',IOSTAT=ierr)
       IF (ierr /= 0) THEN
          Write(error_unit,*) 'unable to open <parameters>',ierr
@@ -769,6 +770,7 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
       END IF
       READ(5,NML=VAR_errors)
       CLOSE(5)
+      if (.not. Extended_Zone) N_BZ_Zones = 1
 
       Nbins = size(bins_raw,5)
       LT    = size(bins_raw,2)
@@ -1012,8 +1014,8 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
      Type (Unit_cell)                      , intent(in) :: Latt_unit
      
      Character (len=64) :: File_out
-     Integer :: N_skip, N_rebin, N_Cov, N_Back, N_auto, N_BZ_Zones =  1
-     Logical :: Extended_Zone = .false. , L_back = .true. 
+     Integer :: N_skip, N_rebin, N_Cov, N_Back, N_auto, N_BZ_Zones
+     Logical :: Extended_Zone, L_back
      Integer :: Nbins
      Integer :: i, n, nb, no, no1, no2, ierr, NBZ_1, NBZ_2
      Type  (Mat_C), allocatable :: Bins (:,:), Bins_R(:,:)
@@ -1028,13 +1030,15 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
      Real    (Kind=Kind(0.d0)) :: Xm,Xe, X
      procedure (func_c), pointer :: f_ptr => Background_eq
      
-      NAMELIST /VAR_errors/ N_skip, N_rebin, N_Cov, N_Back, N_auto, N_BZ_Zones,  Extended_Zone
+      NAMELIST /VAR_errors/ N_skip, N_rebin, N_Cov, N_Back, N_auto, N_BZ_Zones, Extended_Zone
 
       N_skip = 1
       N_rebin = 1
       N_Back = 1
       N_auto = 0
       N_Cov  = 0
+      N_BZ_Zones =  1
+      Extended_Zone = .false.
       OPEN(UNIT=5,FILE='parameters',STATUS='old',ACTION='read',IOSTAT=ierr)
       IF (ierr /= 0) THEN
          Write(error_unit,*) 'unable to open <parameters>',ierr
@@ -1042,6 +1046,7 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
       END IF
       READ(5,NML=VAR_errors)
       CLOSE(5)
+      if (.not. Extended_Zone) N_BZ_Zones = 1
 
       Nbins = size(bins_raw,5)
 
@@ -1096,7 +1101,7 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
       !!                \sum_q e^{iqr}  < O_n(r) O_m(0)> - N \delta_{q,0} <O_n><O_m>
       write(File_out,'(A,A)') trim(name), "JK"
       Open (Unit=33,File=File_out ,status="unknown")
-      If (Extended_zone)  then
+      If (Extended_zone) then
          Allocate  (background(Latt_unit%Norb,Nbins), Xcov(1,1),  Xmean_v(1), &
               &      bins_help(1,Latt_unit%Norb, Latt_unit%Norb, Nbins), Weights(Latt_unit%Norb)  ) 
          do nb = 1, nbins
@@ -1133,7 +1138,7 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
                enddo
             enddo
          enddo
-         deallocate  (background, Xcov,  Xmean_v,  bins_help, Weights ) 
+         deallocate (background, Xcov, Xmean_v, bins_help, Weights) 
       else
          Do n = 1,Latt%N
             Xk_p = dble(Latt%listk(n,1))*Latt%b1_p + dble(Latt%listk(n,2))*Latt%b2_p
@@ -1263,8 +1268,8 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
       Complex (Kind=Kind(0.d0)), Allocatable  :: Bins(:,:)
       REAL    (Kind=Kind(0.d0)), Allocatable  :: AutoCorr(:)
       Integer :: Nobs, Nobs_output, data_range
-      Integer :: Nbins, Nbins_eff, I, IOBS, N_Back, N_BZ_Zones =  1 
-      Logical :: Extended_Zone = .false. 
+      Integer :: Nbins, Nbins_eff, I, IOBS, N_Back, N_BZ_Zones
+      Logical :: Extended_Zone
       
 
       

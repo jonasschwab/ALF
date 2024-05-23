@@ -73,10 +73,11 @@ _PARAMS_GENERIC = OrderedDict([
                      'value': 1},
          'N_skip': {'comment': 'Number of bins to be skipped.',
                     'value': 1},
-         'N_BZ_Zones': {'comment': '# of   Brilloiun  zones',
+         'N_BZ_Zones': {'comment': 'Number of Brillouin zones that will '
+                        'be covered if extended zone scheme is activated.',
                         'value': 1},
-         'Extended_Zone': {'comment': 'If true  carries out the fourier '
-                           'transform in the extened  zone scheme.',
+         'Extended_Zone': {'comment': 'If true carries out the fourier '
+                           'transform in the extened zone scheme.',
                            'value': False},
         }),
     ('VAR_TEMP',
