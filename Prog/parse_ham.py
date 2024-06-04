@@ -26,20 +26,22 @@ if __name__ == '__main__':
     parser.add_argument(
         '--print_obj_list', action='store_true',
         help='Print list of Hamiltonian object files, derived from '
-             '"Hamiltonians.list".'
+             '"Hamiltonians.list" and "Hamiltonians.list.d".'
         )
     parser.add_argument(
         '--create_hamiltonians_interface', action='store_true',
         help='Create "Hamiltonians_interface.h", derived from '
-             '"Hamiltonians.list".'
+             '"Hamiltonians.list" and "Hamiltonians.list.d".'
         )
     parser.add_argument(
         '--create_hamiltonians_case', action='store_true',
-        help='Create "Hamiltonians_case.h", derived from "Hamiltonians.list".'
+        help='Create "Hamiltonians_case.h", derived from "Hamiltonians.list" '
+             'and "Hamiltonians.list.d".'
         )
     parser.add_argument(
         '--create_read_write_par', action='store_true',
-        help='Parse hamiltonian named in "Hamiltonians.list" and write '
+        help='Parse hamiltonian named in "Hamiltonians.list" and '
+             '"Hamiltonians.list.d" and write '
              'Subroutines read_parameters() and write_parameters_hdf5().'
         )
     args = parser.parse_args()
@@ -51,13 +53,13 @@ if __name__ == '__main__':
             print("Results:")
             pprint(parameters)
 
-    if (args.print_obj_list or args.create_hamiltonians_interface 
+    if (args.print_obj_list or args.create_hamiltonians_interface
         or args.create_hamiltonians_case or args.create_read_write_par):
         ham_names, ham_files = get_ham_names_ham_files('Hamiltonians.list')
 
     if args.print_obj_list:
         print(' '.join([ham_file.replace('.F90', '.o') for ham_file in ham_files]))
-    
+
     if args.create_hamiltonians_interface:
         hamiltonians_interface_str = 'interface\n'
         for ham_name, ham_file in zip(ham_names, ham_files):
@@ -68,7 +70,7 @@ if __name__ == '__main__':
         hamiltonians_interface_str = f'''{hamiltonians_interface_str}\nend interface'''
         with open('Hamiltonians_interface.h', 'w', encoding='UTF-8') as f:
             f.write(hamiltonians_interface_str)
-    
+
     if args.create_hamiltonians_case:
         hamiltonians_case_str = ''
         for ham_name, ham_file in zip(ham_names, ham_files):
