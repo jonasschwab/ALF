@@ -3,6 +3,13 @@
 ## ALF 2.6
 ALF 2.6  released  on 2023-??-??
 
+### 2024-07-10 Fix: Lattice in data.h5: Mixup of Norb and N_coord
+Author: J. Schwab
+Merge request !204
+
+The lattice quantities `Norb` and `N_coord` were mistakenly mixed up in the HDF5 results file `data.h5`.
+This has been fixed and the script `Analysis/fix-latt.py` was added to repair existing result files.
+
 ### 2024-01-02  Implement new  function  $ (F,A) = \int d \omega F(\omega) A(\omega)$ in the stochastic maxent.
 Author:  F. Assaad
 Merge  request !196
