@@ -448,11 +448,11 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
       Type (Lattice)                        , intent(out) :: Latt
       Type (Unit_cell)                      , intent(out) :: Latt_unit
       Real    (Kind=Kind(0.d0))             , intent(out) :: dtau
-      Character (len=*)                     , intent(out) :: Channel
+      Character (len=:), allocatable        , intent(out) :: Channel
 
       Integer    :: Nbins, Norb
 
-      Character (len=64) :: obs_dsetname, bak_dsetname, sgn_dsetname, par_dsetname, attr_name
+      Character (len=64) :: obs_dsetname, bak_dsetname, sgn_dsetname, par_dsetname, attr_name, str_temp
       INTEGER                       :: ierr, rank, Nunit, Ntau, Ndim, no
       INTEGER(HSIZE_T), allocatable :: dims(:), maxdims(:)
       INTEGER(HID_T)                :: file_id, dset_id, grp_id, dataspace
@@ -496,7 +496,8 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
 
       CALL h5gopen_f(file_id, name, grp_id, ierr)
       call read_attribute(grp_id, '.', "dtau", dtau, ierr)
-      call read_attribute(grp_id, '.', "Channel", Channel, ierr)
+      call read_attribute(grp_id, '.', "Channel", str_temp, ierr)
+      Channel = str_temp
       call h5gclose_f(grp_id, ierr)
 
       par_dsetname = "lattice"
