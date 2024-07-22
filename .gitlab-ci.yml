@@ -235,22 +235,27 @@ test:
         IMAGE_MINOR: [buster, bullseye, bookworm]
         MODE: [noMPI, MPI, TEMPERING, PARALLEL_PARAMS]
         DEVEL: ["", Devel]
+        CONFIG_ARGS: ["", "HDF5"]
       - MACHINE: GNU
         IMAGE_MINOR: [bullseye-openblas]
         MODE: [noMPI]
         DEVEL: ["", Devel]
+        CONFIG_ARGS: ["", "HDF5"]
       - MACHINE: PGI
         IMAGE_MINOR: bullseye-pgi-21-03
         MODE: [noMPI, MPI, TEMPERING, PARALLEL_PARAMS]
         DEVEL: ["", Devel]
+        CONFIG_ARGS: ["", "HDF5"]
       - MACHINE: INTEL
         IMAGE_MINOR: [bullseye-intel, bookworm-intel-2024.2]
         MODE: [noMPI, MPI, TEMPERING, PARALLEL_PARAMS]
         DEVEL: ["", Devel]
+        CONFIG_ARGS: ["", "HDF5"]
       - MACHINE: INTELLLVM
         IMAGE_MINOR: bookworm-intel-2024.2
         MODE: [noMPI, MPI, TEMPERING, PARALLEL_PARAMS]
         DEVEL: ["", Devel]
+        CONFIG_ARGS: ["", "HDF5"]
 
 test_mac:
   extends: .test_template
