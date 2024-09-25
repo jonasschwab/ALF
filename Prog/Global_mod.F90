@@ -682,7 +682,7 @@ Module Global_mod
         ! Local
         Integer  :: Nf, i, nt, nf_eff
         Complex (Kind=Kind(0.d0)) :: Z, Z1, Ratio_1_array(N_FL), Ratio_2_array(N_FL), g_loc
-        Real    (Kind=Kind(0.d0)) :: X, Ratio_2
+        Real    (Kind=Kind(0.d0)) :: X, Ratio_2, delta, log_delta
 
         Ratio = cmplx(0.d0,0.d0,kind(0.d0))
         Ratio_2_array = 0.d0
@@ -731,7 +731,8 @@ Module Global_mod
         !Z =  Z * cmplx( ham%Delta_S0_global(Nsigma_old),0.d0,kind(0.d0) )
         !Z =  Z * cmplx( T0_Proposal_ratio, 0.d0,kind(0.d0))
         Ratio(2) = sum(Ratio_2_array)
-        Ratio(2) = Ratio(2) + log(ham%Delta_S0_global(Nsigma_old)) + log(T0_Proposal_ratio)
+        delta = ham%Delta_S0_global(Nsigma_old, log_delta)
+        Ratio(2) = Ratio(2) + log_delta + log(T0_Proposal_ratio)
 
         Compute_Ratio_Global = Ratio(1)*exp(Ratio(2))
 

@@ -855,13 +855,15 @@
 !>  Old configuration. The new configuration is stored in nsigma.
 !> \endverbatim
 !-------------------------------------------------------------------
-        Real (Kind=kind(0.d0)) Function Delta_S0_global(Nsigma_old)
+        Real (Kind=kind(0.d0)) Function Delta_S0_global(Nsigma_old, log_delta)
 
         !  This function computes the ratio:  e^{-S0(nsigma)}/e^{-S0(nsigma_old)}
         Implicit none
 
         ! Arguments
         Type (Fields),  INTENT(IN) :: nsigma_old
+        Real (kind=kind(0.d0)), intent(inout) :: log_delta
+
         real(kind=kind(0.0d0))     :: S0_old, S0_new
         integer                    :: f, t, nfield, ntau
 
@@ -878,6 +880,7 @@
         enddo
         S0_old = 0.5d0*S0_old
         S0_new = 0.5d0*S0_new
+        log_delta = -S0_new+S0_old
         Delta_S0_global = exp(-S0_new+S0_old)
       !   write(*,*) "S0 old:", S0_old, "S0 new:", S0_new
             ! S0 = exp( (-Hs_new**2  + nsigma%f(n,nt)**2 ) /2.d0 ) 

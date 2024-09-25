@@ -330,13 +330,14 @@
     !>  Old configuration. The new configuration is stored in nsigma.
     !> \endverbatim
     !-------------------------------------------------------------------
-          Real (Kind=kind(0.d0)) Function Delta_S0_global_base(Nsigma_old)
+          Real (Kind=kind(0.d0)) Function Delta_S0_global_base(Nsigma_old, log_delta)
 
              !  This function computes the ratio:  e^{-S0(nsigma)}/e^{-S0(nsigma_old)}
              Implicit none
 
              ! Arguments
              Type (Fields),  INTENT(IN) :: nsigma_old
+             Real (kind=kind(0.d0)), intent(inout) :: log_delta
 
              Logical, save              :: first_call=.True.
              integer                    :: field_id, tau, Nfields, Ntau
@@ -355,6 +356,7 @@
                    Delta_S0_global_base=Delta_S0_global_base/ham%S0(field_id,tau,Hs_old)
                 enddo
              enddo
+             log_delta = log(Delta_S0_global_base)
 
              if (first_call) then
                 write(output_unit,*)

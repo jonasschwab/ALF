@@ -655,18 +655,21 @@
 !>  Old configuration. The new configuration is stored in nsigma.
 !> \endverbatim
 !-------------------------------------------------------------------
-        Real (Kind=kind(0.d0)) Function Delta_S0_global(Nsigma_old)
+        Real (Kind=kind(0.d0)) Function Delta_S0_global(Nsigma_old, log_delta)
 
           !>  This function computes the ratio:  e^{-S0(nsigma)}/e^{-S0(nsigma_old)}
           Implicit none
 
           !> Arguments
           type (Fields),  Intent(IN)  :: nsigma_old
+          Real (kind=kind(0.d0)), intent(inout) :: log_delta
+
           !> Local
           Integer :: I,n,n1,n2,n3,n4,nt,nt1, nc_F, nc_J, nc_h_p, nc_h_m, n1_m, n4_m
 
 
           Delta_S0_global = 1.d0
+          log_delta=0.d0
           If ( Model == "Z2_Matter" ) then
              nc_F = 0
              nc_J = 0
@@ -716,6 +719,7 @@
              enddo
              Delta_S0_global = ( sinh(Dtau*Ham_h)**nc_h_m ) * (cosh(Dtau*Ham_h)**nc_h_p) * &
                   &            exp( -Dtau*(Ham_K*real(nc_F,kind(0.d0)) + Ham_J*real(nc_J,kind(0.d0))))
+             log_delta = log(Delta_S0_global) ! This can be done better
           endif
         end Function Delta_S0_global
 
