@@ -256,7 +256,6 @@
 
           ! Setup the trival wave function, in case of a projector approach
           if (Projector) Call Ham_Trial()
-          Stop
 
 #ifdef MPI
           If (Irank_g == 0) then
@@ -302,9 +301,11 @@
              Write(unit_info,*) 'N_FL          : ', N_FL
              Write(unit_info,*) 't             : ', Ham_T
              Write(unit_info,*) 'Ham_U         : ', Ham_U
-             Write(unit_info,*) 't2            : ', Ham_T2
-             Write(unit_info,*) 'Ham_U2        : ', Ham_U2
-             Write(unit_info,*) 'Ham_tperp     : ', Ham_tperp
+             if (Index(str_to_upper(Lattice_type),'BILAYER') > 0 )  then
+               Write(unit_info,*) 't2            : ', Ham_T2
+               Write(unit_info,*) 'Ham_U2        : ', Ham_U2
+               Write(unit_info,*) 'Ham_tperp     : ', Ham_tperp
+             endif
              Write(unit_info,*) 'Ham_chem      : ', Ham_chem
              if (Projector) then
                 Do nf = 1,N_FL
