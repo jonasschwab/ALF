@@ -1486,18 +1486,19 @@
       end Subroutine Symmetrize_Families
 
 
-      Logical pure function is_pinned_vertex(I, J, N_pinned_vertices, pinned_vertices)
+      integer pure function get_i_pinned_vertex(I, J, N_pinned_vertices, pinned_vertices)
          integer, intent(in) :: I, J, N_pinned_vertices, pinned_vertices(N_pinned_vertices, 2)
          integer :: n
 
-         is_pinned_vertex = .false.
+         get_i_pinned_vertex = 0
          do n = 1, N_pinned_vertices
             if ((I == pinned_vertices(n,1) .and. J == pinned_vertices(n,2)) .or. &
-                (I == pinned_vertices(n,1) .and. J == pinned_vertices(n,2))) then
-               is_pinned_vertex = .true.
+                (J == pinned_vertices(n,1) .and. I == pinned_vertices(n,2))) then
+               get_i_pinned_vertex = n
+               exit
             endif
          enddo
-      end function is_pinned_vertex
+      end function get_i_pinned_vertex
 
 !--------------------------------------------------------------------
 !> @author
@@ -1523,8 +1524,8 @@
         
         ! Indices of pinned vertices. Shape [N_pinned_vertices, 2]
         Integer, Intent(IN), optional                       :: pinned_vertices(:,:)
-        ! Factor, by which the vertex matrix elements will get multiplied.
-        Real (Kind=Kind(0.d0)), Intent(IN), optional        :: pinning_factor
+        ! Factor, by which the vertex matrix elements will get multiplied. Shape [N_pinned_vertices, N_FL]
+        complex(Kind=Kind(0.d0)), Intent(IN), optional      :: pinning_factor(:,:)
         
         
         ! Local
@@ -1534,7 +1535,12 @@
         Logical                           :: Bulk
         Complex(Kind=Kind(0.d0))          :: Z
 
-        Integer                           :: N_pinned_vertices
+        Integer                           :: N_pinned_vertices, i_pinned_vertex
+
+        
+        N_FL =  size(this,1)
+        !Write(6,*)  'N_FL ', N_FL
+        Ndim =  Latt%N * Latt_Unit%Norb
 
         if( (present(pinned_vertices) .and. .not.present(pinning_factor)) .or. &
             (.not.present(pinned_vertices) .and. present(pinning_factor)) ) then
@@ -1548,12 +1554,17 @@
              write(error_unit, *) 'Second dimension of pinned_vertices has to be 2.'
              CALL Terminate_on_error(ERROR_GENERIC,__FILE__,__LINE__)
            endif
-        endif
 
-        
-        N_FL =  size(this,1)
-        !Write(6,*)  'N_FL ', N_FL
-        Ndim =  Latt%N * Latt_Unit%Norb
+           if(size(pinning_factor, 1) .ne. N_pinned_vertices) then
+            write(error_unit, *) 'First dimension of pinning_factor has to be equal to the number of pinned vertices.'
+            CALL Terminate_on_error(ERROR_GENERIC,__FILE__,__LINE__)
+          endif
+
+          if(size(pinning_factor, 2) .ne. N_FL) then
+            write(error_unit, *) 'Second dimension of pinning_factor has to be equal to the number of flavors N_FL.'
+            CALL Terminate_on_error(ERROR_GENERIC,__FILE__,__LINE__)
+          endif
+        endif
 
         ! Test of correctness of checkerboard decomposition
         If (checkerboard) then
@@ -1606,7 +1617,8 @@
                        I1   = Invlist(I,no_I)
                        J1   = Invlist(J,no_J)
                        if(present(pinned_vertices)) then
-                          if(is_pinned_vertex(I1, J1, N_pinned_vertices, pinned_vertices)) Z = Z*pinning_factor
+                          i_pinned_vertex = get_i_pinned_vertex(I1, J1, N_pinned_vertices, pinned_vertices)
+                          if(i_pinned_vertex .ne. 0) Z = Z*pinning_factor(i_pinned_vertex, nf)
                        endif
                        Op_T(1,nf)%O(I1,J1) = this(nf)%T(Nb)*Z
                        Op_T(1,nf)%O(J1,I1) = Conjg(this(nf)%T(Nb)*Z)
@@ -1669,7 +1681,8 @@
                        J    = Latt%nnlist(I,n_1,n_2)
                        Z    = Generic_hopping(I,no_I, n_1, n_2, no_J, N_Phi, Phi_x,Phi_y, Bulk, Latt, Latt_Unit)
                        if(present(pinned_vertices)) then
-                          if(is_pinned_vertex(I1, J1, N_pinned_vertices, pinned_vertices)) Z = Z*pinning_factor
+                          i_pinned_vertex = get_i_pinned_vertex(I1, J1, N_pinned_vertices, pinned_vertices)
+                          if(i_pinned_vertex .ne. 0) Z = Z*pinning_factor(i_pinned_vertex, nf)
                        endif
                        I1   = Invlist(I,no_I)
                        J1   = Invlist(J,no_J)
