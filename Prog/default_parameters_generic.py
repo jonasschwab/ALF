@@ -113,7 +113,7 @@ _PARAMS_GENERIC = OrderedDict([
          'Ngamma': {'comment': 'Number of Dirac delta-functions for '
                                'parametrization.',
                     'value': 400},
-         'Nwarm': {'comment': 'The Nwarm first bins will be ommitted.',
+         'Nwarm': {'comment': 'The Nwarm first bins will be omitted.',
                    'value': 20},
          'Om_en': {'comment': 'Frequency range upper bound.',
                    'value': 10.0},
