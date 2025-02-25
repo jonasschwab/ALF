@@ -49,6 +49,7 @@
       Use WaveFunction_mod
       Use MyMats
       use iso_fortran_env, only: output_unit, error_unit
+      use Hamiltonian_main
       Implicit none
 
       Type Hopping_Matrix_type
