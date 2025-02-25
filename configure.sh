@@ -48,9 +48,9 @@ set_hdf5_flags()
   H5_minor=14
   H5_patch=5
   H5_suff=""
-  HDF5_DIR="$ALF_DIR/HDF5/${compiler_vers}/HDF5v${H5_major}.${H5_minor}.${H5_patch}${H5_suff}"
+  HDF5_DIR="$ALF_DIR/HDF5/${compiler_vers}"
   if [ ! -d "$HDF5_DIR" ]; then
-    printf "\nHDF5 ${H5_major}.${H5_minor}.${H5_patch}${H5_suff} is not yet installed for compiler '%s'.\n" "$compiler_vers"
+    printf "\nHDF5 is not yet installed for compiler '%s'.\n" "$compiler_vers"
     printf "ALF does never use global HDF5 libraries, but installs it locally in subfolders of '%s/HDF5'.\n" "$ALF_DIR"
     if [ "$NO_INTERACTIVE" = "" ]; then
       printf "Do you want download and install it now locally in the ALF folder? (Y/n):"
