@@ -773,7 +773,7 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
       N_auto  = 0
       N_Cov   = 0
       Extended_Zone = .false.
-      N_BZ_Zones = 1
+      N_BZ_Zones = Latt_unit%Norb
       OPEN(UNIT=5,FILE='parameters',STATUS='old',ACTION='read',IOSTAT=ierr)
       IF (ierr /= 0) THEN
          Write(error_unit,*) 'unable to open <parameters>',ierr
@@ -1048,7 +1048,7 @@ Subroutine read_latt_hdf5(filename, name, sgn, bins, bins0, Latt, Latt_unit, dta
       N_Back = 1
       N_auto = 0
       N_Cov  = 0
-      N_BZ_Zones =  1
+      N_BZ_Zones =  Latt_unit%Norb
       Extended_Zone = .false.
       OPEN(UNIT=5,FILE='parameters',STATUS='old',ACTION='read',IOSTAT=ierr)
       IF (ierr /= 0) THEN
