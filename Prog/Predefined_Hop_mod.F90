@@ -52,6 +52,8 @@
       use Hamiltonian_main
       Implicit none
 
+      Logical, private, save :: pinning_notice_issued = .false.
+
       Type Hopping_Matrix_type
          Integer                   :: N_bonds
          Complex (Kind=Kind(0.d0)), pointer :: T    (:)    !  This does not include  local terms.
@@ -1510,7 +1512,27 @@
          enddo
       end function get_i_pinned_vertex
 
-      subroutine write_pinning_notice_to_info()
+
+      complex(Kind=Kind(0.d0)) function get_pinning_factor(I, J, N_pinned_vertices, pinned_vertices, pinning_factor, nf)
+         integer, intent(in) :: I, J, N_pinned_vertices, pinned_vertices(N_pinned_vertices, 2), nf
+         complex(Kind=Kind(0.d0)), Intent(IN) :: pinning_factor(:,:)
+
+         integer :: i_pinned_vertex
+
+         i_pinned_vertex = get_i_pinned_vertex(I, J, N_pinned_vertices, pinned_vertices)
+         if(i_pinned_vertex .ne. 0) then
+            get_pinning_factor = pinning_factor(i_pinned_vertex, nf)
+         else
+            get_pinning_factor = cmplx(1.d0,0.d0, kind(0.d0))
+         endif
+         if(get_pinning_factor .ne. cmplx(1.d0,0.d0, kind(0.d0))) then
+            if(.not. pinning_notice_issued) call issue_pinning_notice()
+            pinning_notice_issued = .true.
+         endif
+      end function get_pinning_factor
+
+
+      subroutine issue_pinning_notice()
          Character (len=64) :: file_info
          integer :: unit_info
 #ifdef MPI
@@ -1523,11 +1545,20 @@
 #endif
 #if defined(TEMPERING)
          write(file_info,'(A,I0,A)') "Temp_",igroup,"/info"
+         If (Irank_g == 0 ) write(error_unit, '(A,I0,A)') &
+               'Warning: you are using pinning on parameter set ', igroup, &
+               '. Results will not have translation symmetry.'
 #else
          file_info = "info"
+         If (Irank_g == 0 ) write(error_unit, *) &
+               'Warning: you are using pinning, results will not have translation symmetry.'
 #endif
 #if defined(MPI)
          If (Irank_g == 0 ) then
+#if defined(TEMPERING)
+            
+#
+#endif
 #endif
             Open (newunit=unit_info, file=file_info, status="unknown", position="append")
             Write(unit_info,*) ' Pinning is used. Results will not have translation symmetry.'
@@ -1535,7 +1566,7 @@
 #if defined(MPI)
          endif
 #endif
-      end subroutine write_pinning_notice_to_info
+      end subroutine issue_pinning_notice
 
 !--------------------------------------------------------------------
 !> @author
@@ -1587,8 +1618,6 @@
 
         if(present(pinned_vertices)) N_pinned_vertices = size(pinned_vertices, 1)
         if(present(pinned_vertices)) then
-           write(error_unit, *) 'Warning: you are using pinning, results will not have translation symmetry.'
-           call write_pinning_notice_to_info()
            if(size(pinned_vertices, 2) .ne. 2) then
              write(error_unit, *) 'Second dimension of pinned_vertices has to be 2.'
              CALL Terminate_on_error(ERROR_GENERIC,__FILE__,__LINE__)
@@ -1629,8 +1658,7 @@
                   Op_T(n,nf)%P(1)   = n
                   Z = this(nf)%T_Loc(list(n,2))
                   if(present(pinned_vertices)) then
-                     i_pinned_vertex = get_i_pinned_vertex(n, n, N_pinned_vertices, pinned_vertices)
-                     if(i_pinned_vertex .ne. 0) Z = Z*pinning_factor(i_pinned_vertex, nf)
+                     Z = Z*get_pinning_factor(n, n, N_pinned_vertices, pinned_vertices, pinning_factor, nf)
                   endif
                   Op_T(n,nf)%O(1,1) =  Z
                   Op_T(n,nf)%g      = -Dtau
@@ -1661,8 +1689,7 @@
                        I1   = Invlist(I,no_I)
                        J1   = Invlist(J,no_J)
                        if(present(pinned_vertices)) then
-                          i_pinned_vertex = get_i_pinned_vertex(I1, J1, N_pinned_vertices, pinned_vertices)
-                          if(i_pinned_vertex .ne. 0) Z = Z*pinning_factor(i_pinned_vertex, nf)
+                          Z = Z*get_pinning_factor(I1, J1, N_pinned_vertices, pinned_vertices, pinning_factor, nf)
                        endif
                        Op_T(1,nf)%O(I1,J1) = this(nf)%T(Nb)*Z
                        Op_T(1,nf)%O(J1,I1) = Conjg(this(nf)%T(Nb)*Z)
@@ -1677,8 +1704,7 @@
                         I1   = Invlist(I,no_I)
                         Z = this(nf)%T_Loc(no_I) 
                         if(present(pinned_vertices)) then
-                           i_pinned_vertex = get_i_pinned_vertex(I1, I1, N_pinned_vertices, pinned_vertices)
-                           if(i_pinned_vertex .ne. 0) Z = Z*pinning_factor(i_pinned_vertex, nf)
+                           Z = Z*get_pinning_factor(I1, J1, N_pinned_vertices, pinned_vertices, pinning_factor, nf)
                         endif
                         Op_T(1,nf)%O(I1,I1) = Z
                     Enddo
@@ -1734,12 +1760,9 @@
                        Z1   = this(nf)%T_loc(no_I)/this(1)%Multiplicity(no_I)
                        Z2   = this(nf)%T_loc(no_J)/this(1)%Multiplicity(no_J)
                        if(present(pinned_vertices)) then
-                          i_pinned_vertex = get_i_pinned_vertex(I1, J1, N_pinned_vertices, pinned_vertices)
-                          if(i_pinned_vertex .ne. 0) Z = Z*pinning_factor(i_pinned_vertex, nf)
-                          i_pinned_vertex = get_i_pinned_vertex(I1, I1, N_pinned_vertices, pinned_vertices)
-                          if(i_pinned_vertex .ne. 0) Z1 = Z1*pinning_factor(i_pinned_vertex, nf)
-                          i_pinned_vertex = get_i_pinned_vertex(J1, J1, N_pinned_vertices, pinned_vertices)
-                          if(i_pinned_vertex .ne. 0) Z2 = Z2*pinning_factor(i_pinned_vertex, nf)
+                          Z = Z*get_pinning_factor(I1, J1, N_pinned_vertices, pinned_vertices, pinning_factor, nf)
+                          Z1 = Z1*get_pinning_factor(I1, I1, N_pinned_vertices, pinned_vertices, pinning_factor, nf)
+                          Z2 = Z2*get_pinning_factor(J1, J1, N_pinned_vertices, pinned_vertices, pinning_factor, nf)
                        endif
                        nc = nc + 1
                        Op_T(nc,nf)%P(1) = I1
