@@ -590,7 +590,7 @@
             logical            :: File_exists
 #ifdef HDF5
             Character (len=7), parameter  :: File_h5 = "data.h5"
-            Character (len=64)            :: filename, groupname, obs_dsetname, bak_dsetname, sgn_dsetname
+            Character (len=64)            :: filename, groupname, obs_dsetname, sgn_dsetname
             INTEGER(HID_T)                :: file_id, group_id
             logical                       :: link_exists
             INTEGER                       :: hdferr
@@ -628,11 +628,11 @@
             groupname = File_pr
             filename = File_h5
 #endif
-            Obs%Obs_Latt  = Obs%Obs_Latt /dble(Obs%N   )
-            Obs%Ave_sign  = Obs%Ave_Sign /dble(Obs%N   )
+            Obs%Obs_Latt  = Obs%Obs_Latt / dble(Obs%N)
+            Obs%Ave_sign  = Obs%Ave_Sign / dble(Obs%N)
 
 #if defined(MPI)
-            Allocate (Tmp(Obs%Latt%N , Ntau , Obs%Latt_unit%Norb))
+            Allocate (Tmp(Obs%Latt%N, Ntau, Obs%Latt_unit%Norb))
             I = Obs%Latt%N * Ntau * Obs%Latt_unit%Norb
             Tmp = cmplx(0.d0, 0.d0, kind(0.D0))
             CALL MPI_REDUCE(Obs%Obs_Latt,Tmp,I,MPI_COMPLEX16,MPI_SUM, 0,Group_Comm,IERR)
@@ -709,7 +709,6 @@
 
 #if defined HDF5
                write(obs_dsetname,'(A,A,A)') trim(groupname), "/obser"
-               write(bak_dsetname,'(A,A,A)') trim(groupname), "/back"
                write(sgn_dsetname,'(A,A,A)') trim(groupname), "/sign"
 
                CALL h5fopen_f (filename, H5F_ACC_RDWR_F, file_id, hdferr)

@@ -430,7 +430,7 @@ Subroutine read_local_hdf5(filename, name, sgn, bins, Latt, Latt_unit, dtau, Cha
 
       Integer    :: Nbins, Norb
 
-      Character (len=64) :: obs_dsetname, bak_dsetname, sgn_dsetname, par_dsetname, attr_name, str_temp
+      Character (len=64) :: obs_dsetname, sgn_dsetname, par_dsetname, attr_name, str_temp
       INTEGER                       :: ierr, rank, Nunit, Ntau, Ndim, no
       INTEGER(HSIZE_T), allocatable :: dims(:), maxdims(:)
       INTEGER(HID_T)                :: file_id, dset_id, grp_id, dataspace
