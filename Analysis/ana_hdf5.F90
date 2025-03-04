@@ -1,4 +1,4 @@
-!  Copyright (C) 2020-2021 The ALF project
+!  Copyright (C) 2020-2025 The ALF project
 !
 !     The ALF project is free software: you can redistribute it and/or modify
 !     it under the terms of the GNU General Public License as published by
@@ -104,7 +104,6 @@
       enddo
       
       do n=1, size(names)
-         Write(6,*) names(n)
          name = names(n)
          i = len(trim(name)) -5
          if ( i > 1 ) then

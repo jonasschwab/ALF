@@ -76,7 +76,6 @@
          Integer            :: N                                    ! Number of measurements
          Real      (Kind=Kind(0.d0)) :: Ave_Sign                    ! Averarge sign
          complex   (Kind=Kind(0.d0)), pointer :: Obs_Latt (:,:,:)   ! i, tau, norb
-         complex   (Kind=Kind(0.d0)), pointer :: Obs_Latt0(:)       ! norb
          Character (len=64) :: File_Latt                            ! Name of file in which the bins will be written out
          Type (Lattice),       pointer :: Latt                      ! Pointer to Bravais lattice
          Type (Unit_cell),     pointer :: Latt_unit                 ! Pointer to unit cell
