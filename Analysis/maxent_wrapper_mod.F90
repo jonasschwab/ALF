@@ -44,6 +44,17 @@ contains
        XKER_ph = (exp(-tau*om) + exp(-( beta - tau )*om ) )/( pi*(1.d0 + exp( - beta * om ) ) )
 
      end function XKER_ph
+	 
+	 Real (Kind=Kind(0.d0)) function XKER_ph_c(tau,om, beta)
+        ! Kernal for A(om)
+       Implicit None
+       real (Kind=Kind(0.d0)) :: tau, om, pi, beta
+
+       pi = 3.1415927
+
+       XKER_ph_c = (exp(-tau*om) + exp(-( beta - tau )*om ) )/( pi*(1.d0 + exp( - beta * om ) ) )
+
+     end function XKER_ph_c
 
      Real (Kind=Kind(0.d0)) function XKER_pp(tau,om, beta)
 
@@ -92,6 +103,16 @@ contains
       F_QFI_ph = (4.d0/pi) * ( (exp(beta*om) - 1.d0)/( exp(beta*om) + 1.d0 ) )**2
 
      end function F_QFI_ph
+	 
+	 Real (Kind=Kind(0.d0)) function F_QFI_ph_c(om, beta)
+
+      Implicit None
+      real (Kind=Kind(0.d0)) ::  om, beta
+      real (Kind=Kind(0.d0)) :: pi
+      pi = 3.1415927
+      F_QFI_ph_c = (4.d0/pi) * ( (exp(beta*om) - 1.d0)/( exp(beta*om) + 1.d0 ) )**2
+
+     end function F_QFI_ph_c
 
      Real (Kind=Kind(0.d0)) function Back_trans_ph(Aom, om, beta)
 
@@ -102,6 +123,15 @@ contains
        ! This gives S(q,om) = chi(q,om)/(1 - e^(-beta om))
 
      end function BACK_TRANS_PH
+	 
+	 Real (Kind=Kind(0.d0)) function Back_trans_ph_c(Aom, om, beta)
+       Implicit None
+       real (Kind=Kind(0.d0)) ::  Aom, om, beta
+
+       Back_trans_ph_c = Aom*(1.d0 - exp(-beta*om) )/(1.d0 + exp(-beta*om) )/om
+       ! This gives sigma(q,om) = A(q,om)*(1 + e^(-beta om))/(1 - e^(-beta om))/om
+
+     end function BACK_TRANS_PH_C
 
      Real (Kind=Kind(0.d0)) function Back_trans_pp(Aom, om, beta)
 
@@ -252,6 +282,22 @@ contains
          Do  nw = 1, Ndis
              Om = Om_st + dble(nw)*dom
              Default(nw)  = (1.d0 + exp(-beta*om)) * Default(nw)
+             X = X + Default(nw) 
+         enddo
+         X = X*dom
+         Default =  Default*Xmom1/X
+         Default =  Default*dom
+       case("PH_C")
+	   ! The only difference with PH is: sum rule and Back_trans_ph_c(Back transformation).
+	   ! XKER_ph_c(Kernal) is same since we already come back to same fumula K(om)A(om)
+         If (.not. Default_model_exists ) Default = 1.d0/(Om_en - Om_st) ! Flat  default   
+         !Compute   sum rule  for  A(om)
+         X  = 0.d0
+         Do  nw = 1, Ndis
+             Om = Om_st + dble(nw)*dom
+			 !  Default(om) : sigma(om) -> A(om)
+			 !  Default(om)*om = chi''(om) = (1 - exp(-beta*om))*S(om) = (1 - exp(-beta*om))/(1 + exp(-beta*om))*A(om)
+             Default(nw)  = om*(1.d0 + exp(-beta*om))/( 1.d0 - exp(-beta*om) ) * Default(nw)
              X = X + Default(nw) 
          enddo
          X = X*dom
