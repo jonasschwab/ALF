@@ -37,6 +37,8 @@ stages:
     - export PATH="$HOME/.local/bin:$PATH"
     - git remote set-branches origin master $CI_COMMIT_BRANCH
     - git fetch --depth=1
+    - git checkout $CI_COMMIT_BRANCH
+    - git checkout .
     - pip install --no-deps pyALF
     - export ALF_DIR="$PWD"
     - . ./configure.sh $MACHINE noMPI HDF5 NO-INTERACTIVE
@@ -54,12 +56,6 @@ stages:
   artifacts:
     paths:
       - ALF_data
-  cache:
-    key: HDF5-$MACHINE
-    untracked: true
-    paths:
-      - HDF5
-    policy: pull
 
 .simulation_template:
   stage: simulation
@@ -128,10 +124,10 @@ Bookworm:
 #Intel21:
 #    image: git.physik.uni-wuerzburg.de:25812/alf/alf_docker/pyalf-requirements/bullseye-intel
 #    variables: {MACHINE: INTEL}
-IntelLatest:
-    image: git.physik.uni-wuerzburg.de:25812/alf/alf_docker/pyalf-requirements/bookworm-intel
+Intel-2024.2:
+    image: git.physik.uni-wuerzburg.de:25812/alf/alf_docker/pyalf-requirements/bookworm-intel-2024.2
     variables: {MACHINE: INTEL}
-IntelLLVMLatest:
+IntelLLVM-Latest:
     image: git.physik.uni-wuerzburg.de:25812/alf/alf_docker/pyalf-requirements/bookworm-intel
     variables: {MACHINE: INTELLLVM}
 PGI-21-03:
