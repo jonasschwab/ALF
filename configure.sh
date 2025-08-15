@@ -40,12 +40,16 @@ STABCONFIGURATION=""
 
 export ALF_DIR="$PWD"
 
+# Create temporary directory for various checks with temporary files to be run in paralell
+tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'tmpdir')
+printf "\n\033[0;32mTemporary directory %s created\e[0m\n" "$tmpdir"
+
 set_hdf5_flags()
 {
   CC="$1" FC="$2" CXX="$3"
   
-  $FC -o get_compiler_version.out get_compiler_version.F90
-  compiler_vers=$(./get_compiler_version.out | sed 's/[ ,()]/_/g')
+  $FC -o $tmpdir/get_compiler_version.out get_compiler_version.F90
+  compiler_vers=$($tmpdir/get_compiler_version.out | sed 's/[ ,()]/_/g')
   
   H5_major=1
   H5_minor=14
@@ -73,6 +77,8 @@ set_hdf5_flags()
       ;;
       *) 
         printf "Skipping installation of HDF5.\n"
+        rm -r $tmpdir
+        printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
         return 1
       ;;
     esac
@@ -93,18 +99,27 @@ check_libs()
     FC="$1" LIBS="$2"
     FC0="$(echo "$FC" | cut -f1 -d' ')"
     if command -v "$FC0" > /dev/null; then       # Compiler binary found
-        if sh -c "$FC check_libs.f90 $LIBS -o check_libs.out"; then  # Compiling with $LIBS is successful
-            ./check_libs.out || (
+        if sh -c "$FC check_libs.f90 $LIBS -o $tmpdir/check_libs.out"; then  # Compiling with $LIBS is successful
+            $tmpdir/check_libs.out || (
               printf "${RED}\n==== Error: Execution of test program using compiler <%s> ====${NC}\n" "$FC" 1>&2
               printf "${RED}==== and linear algebra libraries <%s> not successful. ====${NC}\n\n" "$LIBS" 1>&2
+              # script gets terminated, so remove tmpdir
+              rm -r $tmpdir
+              printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
               return 1
               )
         else
             printf "${RED}\n==== Error: Linear algebra libraries <%s> not found. ====${NC}\n\n" "$LIBS" 1>&2
+              # script gets terminated, so remove tmpdir
+              rm -r $tmpdir
+              printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
             return 1
         fi
     else
         printf "${RED}\n==== Error: Compiler <%s> not found. ====${NC}\n\n" "$FC" 1>&2
+        # script gets terminated, so remove tmpdir
+        rm -r $tmpdir
+        printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
         return 1
     fi
 }
@@ -112,8 +127,8 @@ check_libs()
 check_python()
 {
     if ! command -v python3 > /dev/null; then
-	printf "${RED}\n==== Error: Python 3 not found. =====${NC}\n\n" 1>&2
-	return 1
+        printf "${RED}\n==== Error: Python 3 not found. =====${NC}\n\n" 1>&2
+        return 1
     fi
 }
 
@@ -130,6 +145,8 @@ find_mkl_flag()
     else
       INTELMKL="-mkl"
     fi
+  elif command -v ifx > /dev/null; then
+    INTELMKL="-qmkl"
   else 
     printf "${RED}\n==== Error: MKL only supported for ifort compiler. ====${NC}\n\n" "$FC" 1>&2
   fi
@@ -508,5 +525,8 @@ export ALF_FLAGS_QRREF
 export ALF_FLAGS_MODULES
 export ALF_FLAGS_ANA
 export ALF_FLAGS_PROG
+
+rm -r $tmpdir
+printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
 
 printf "\nTo compile your program use:    'make'\n\n"
