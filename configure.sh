@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2059
 # This script sets necessary environment variables for compiling ALF.
 # You need to source it prior to executing make.
 USAGE="usage 'source configure.sh MACHINE MODE STAB'
@@ -40,7 +41,7 @@ STABCONFIGURATION=""
 
 export ALF_DIR="$PWD"
 
-# Create temporary directory for various checks with temporary files to be run in paralell
+# Create temporary directory for various checks with temporary files to be run in parallel
 tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'tmpdir')
 printf "\n\033[0;32mTemporary directory %s created\e[0m\n" "$tmpdir"
 
@@ -48,8 +49,8 @@ set_hdf5_flags()
 {
   CC="$1" FC="$2" CXX="$3"
   
-  $FC -o $tmpdir/get_compiler_version.out get_compiler_version.F90
-  compiler_vers=$($tmpdir/get_compiler_version.out | sed 's/[ ,()]/_/g')
+  $FC -o "$tmpdir/get_compiler_version.out" get_compiler_version.F90
+  compiler_vers=$("$tmpdir/get_compiler_version.out" | sed 's/[ ,()]/_/g')
   
   H5_major=1
   H5_minor=14
@@ -73,11 +74,11 @@ set_hdf5_flags()
     case "$yn" in
       y|Y|"")
         printf "${GREEN}Downloading and installing HDF5 in %s.${NC}\n" "$HDF5_DIR"
-        CC="$CC" FC="$FC" CXX="$CXX" HDF5_DIR="$HDF5_DIR" "$ALF_DIR/HDF5/install_hdf5.sh" ${H5_major} ${H5_minor} ${H5_patch} ${H5_suff} || return 1
+        CC="$CC" FC="$FC" CXX="$CXX" HDF5_DIR="$HDF5_DIR" "$ALF_DIR/HDF5/install_hdf5.sh" ${H5_major} ${H5_minor} ${H5_patch} "${H5_suff}" || return 1
       ;;
       *) 
         printf "Skipping installation of HDF5.\n"
-        rm -r $tmpdir
+        rm -r "$tmpdir"
         printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
         return 1
       ;;
@@ -100,25 +101,25 @@ check_libs()
     FC0="$(echo "$FC" | cut -f1 -d' ')"
     if command -v "$FC0" > /dev/null; then       # Compiler binary found
         if sh -c "$FC check_libs.f90 $LIBS -o $tmpdir/check_libs.out"; then  # Compiling with $LIBS is successful
-            $tmpdir/check_libs.out || (
+            "$tmpdir/check_libs.out" || (
               printf "${RED}\n==== Error: Execution of test program using compiler <%s> ====${NC}\n" "$FC" 1>&2
               printf "${RED}==== and linear algebra libraries <%s> not successful. ====${NC}\n\n" "$LIBS" 1>&2
               # script gets terminated, so remove tmpdir
-              rm -r $tmpdir
+              rm -r "$tmpdir"
               printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
               return 1
               )
         else
             printf "${RED}\n==== Error: Linear algebra libraries <%s> not found. ====${NC}\n\n" "$LIBS" 1>&2
               # script gets terminated, so remove tmpdir
-              rm -r $tmpdir
+              rm -r "$tmpdir"
               printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
             return 1
         fi
     else
         printf "${RED}\n==== Error: Compiler <%s> not found. ====${NC}\n\n" "$FC" 1>&2
         # script gets terminated, so remove tmpdir
-        rm -r $tmpdir
+        rm -r "$tmpdir"
         printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
         return 1
     fi
@@ -526,7 +527,7 @@ export ALF_FLAGS_MODULES
 export ALF_FLAGS_ANA
 export ALF_FLAGS_PROG
 
-rm -r $tmpdir
+rm -r "$tmpdir"
 printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
 
 printf "\nTo compile your program use:    'make'\n\n"
