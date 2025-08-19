@@ -41,9 +41,13 @@ STABCONFIGURATION=""
 
 export ALF_DIR="$PWD"
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
 # Create temporary directory for various checks with temporary files to be run in parallel
 tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'tmpdir')
-printf "\n\033[0;32mTemporary directory %s created\e[0m\n" "$tmpdir"
+printf "\n${GREEN}Temporary directory %s created${NC}\n" "$tmpdir"
 
 set_hdf5_flags()
 {
@@ -79,7 +83,7 @@ set_hdf5_flags()
       *) 
         printf "Skipping installation of HDF5.\n"
         rm -r "$tmpdir"
-        printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
+        printf "\n${GREEN}Temporary directory %s deleted${NC}\n" "$tmpdir"
         return 1
       ;;
     esac
@@ -106,21 +110,21 @@ check_libs()
               printf "${RED}==== and linear algebra libraries <%s> not successful. ====${NC}\n\n" "$LIBS" 1>&2
               # script gets terminated, so remove tmpdir
               rm -r "$tmpdir"
-              printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
+              printf "\n${GREEN}Temporary directory %s deleted${NC}\n" "$tmpdir"
               return 1
               )
         else
             printf "${RED}\n==== Error: Linear algebra libraries <%s> not found. ====${NC}\n\n" "$LIBS" 1>&2
               # script gets terminated, so remove tmpdir
               rm -r "$tmpdir"
-              printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
+              printf "\n${GREEN}Temporary directory %s deleted${NC}\n" "$tmpdir"
             return 1
         fi
     else
         printf "${RED}\n==== Error: Compiler <%s> not found. ====${NC}\n\n" "$FC" 1>&2
         # script gets terminated, so remove tmpdir
         rm -r "$tmpdir"
-        printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
+        printf "\n${GREEN}Temporary directory %s deleted${NC}\n" "$tmpdir"
         return 1
     fi
 }
@@ -221,10 +225,6 @@ stabv=0
 HDF5_ENABLED=""
 NO_INTERACTIVE=""
 NO_FALLBACK=""
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
 
 while [ "$#" -gt "0" ]; do
   ARG="$(echo "$1" | tr '[:lower:]' '[:upper:]')"
@@ -528,6 +528,6 @@ export ALF_FLAGS_ANA
 export ALF_FLAGS_PROG
 
 rm -r "$tmpdir"
-printf "\n\033[0;32mTemporary directory %s deleted\e[0m\n" "$tmpdir"
+printf "\n${GREEN}Temporary directory %s deleted${NC}\n" "$tmpdir"
 
 printf "\nTo compile your program use:    'make'\n\n"
