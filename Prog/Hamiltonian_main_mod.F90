@@ -153,6 +153,7 @@
         procedure, nopass :: Overide_global_tau_sampling_parameters => Overide_global_tau_sampling_parameters_base
         procedure, nopass :: Global_move => Global_move_base
         procedure, nopass :: Delta_S0_global => Delta_S0_global_base
+        procedure, nopass :: Get_Delta_S0_global => Get_Delta_S0_global_base
         procedure, nopass :: S0 => S0_base
         procedure, nopass :: Ham_Langevin_HMC_S0 => Ham_Langevin_HMC_S0_base
         procedure, nopass :: weight_reconstruction => weight_reconstruction_base
@@ -331,20 +332,19 @@
     !>  Old configuration. The new configuration is stored in nsigma.
     !> \endverbatim
     !-------------------------------------------------------------------
-          subroutine Delta_S0_global_base(Nsigma_old, exp_delta_S0, delta_S0)
+          Real (Kind=kind(0.d0)) Function Delta_S0_global_base(Nsigma_old)
 
              !  This function computes the ratio:  e^{-S0(nsigma)}/e^{-S0(nsigma_old)}
              Implicit none
 
              ! Arguments
              Type (Fields),  INTENT(IN) :: nsigma_old
-             Real (kind=kind(0.d0)), intent(out) :: exp_delta_S0, delta_S0
 
              Logical, save              :: first_call=.True.
              integer                    :: field_id, tau, Nfields, Ntau
              Complex (kind=kind(0.0d0)) :: Hs_old
 
-             exp_delta_S0 = 1.d0
+             Delta_S0_global_base = 1.d0
              Nfields=size(nsigma_old%f,1)
              Ntau=size(nsigma_old%f,2)
              do tau=1,Ntau
@@ -354,10 +354,9 @@
                    Hs_old  =nsigma_old%f(field_id,tau)
                    ! note we need exp(-S0(new))/exp(-S0(old)) but nsigma is already the new config and we provide HS_old
                    ! in contrast to HS_new. Hence, S0 returns the inverse of whar we need!
-                   exp_delta_S0=exp_delta_S0/ham%S0(field_id,tau,Hs_old)
+                   Delta_S0_global_base=Delta_S0_global_base/ham%S0(field_id,tau,Hs_old)
                 enddo
              enddo
-             delta_S0 = log(exp_delta_S0)
 
              if (first_call) then
                 write(output_unit,*)
@@ -369,7 +368,48 @@
                 first_call=.False.
              endif
 
-          end subroutine Delta_S0_global_base
+          end Function Delta_S0_global_base
+
+
+    !--------------------------------------------------------------------
+    !> @author
+    !> ALF Collaboration
+    !>
+    !> @brief
+    !> Computes the difference - S0(new) + S0(old)
+    !>
+    !> @details
+    !> This function computes the difference \verbatim Delta_S0 = -S0(nsigma) + S0(nsigma_old) \endverbatim
+    !> @param [IN] nsigma_old,  Type(Fields)
+    !> \verbatim
+    !>  Old configuration. The new configuration is stored in nsigma.
+    !> \endverbatim
+    !-------------------------------------------------------------------
+          Real (Kind=kind(0.d0)) Function Get_Delta_S0_global_base(Nsigma_old)
+
+             !  This function computes the difference:  -S0(nsigma) + S0(nsigma_old)
+             Implicit none
+
+             ! Arguments
+             Type (Fields),  INTENT(IN) :: nsigma_old
+
+             Logical, save              :: first_call=.True.
+             integer                    :: field_id, tau, Nfields, Ntau
+             Complex (kind=kind(0.0d0)) :: Hs_old
+
+             Get_Delta_S0_global_base = log(ham%Delta_S0_global(nsigma_old)) ! to avoid overflows we return the log of the ratio
+
+             if (first_call) then
+                write(output_unit,*)
+                write(output_unit,*) "ATTENTION:     The base implementation of Get_Delta_S0_global is used!"
+                write(output_unit,*) "NOTE: We are replacing Delta_S0_global by Get_Delta_S0_global to avoid overflows!"
+                write(output_unit,*) "Consider overwriting this NEW function which returns log(Delta_S0_global)."
+                write(output_unit,*) "Suppressing further printouts of this message."
+                write(output_unit,*)
+                first_call=.False.
+             endif
+
+          end Function Get_Delta_S0_global_base
 
 
     !--------------------------------------------------------------------
