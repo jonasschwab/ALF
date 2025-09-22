@@ -263,9 +263,9 @@ Module Global_mod
               If (L_Test) Write(6,*) 'Ratio_global: Irank, Partner',Irank,List_partner(Irank), &
                    &                  Ratiotot, Ratio(1)*exp(Ratio(2))
            else
-              call ham%Delta_S0_global(Nsigma_old, exp_delta_S0, delta_S0_log)
-              Ratio(1) = exp_delta_S0
-              Ratio(2) = 0
+              delta_S0_log = ham%Get_Delta_S0_global(Nsigma_old)
+              Ratio(1) = 1.0d0 !!! @FAKHER @JONAS double check please
+              Ratio(2) = delta_S0_log
            endif
 
            !  Acceptace/rejection decision taken on master node after receiving information from slave
@@ -731,7 +731,7 @@ Module Global_mod
         !Z =  Z * cmplx( ham%Delta_S0_global(Nsigma_old),0.d0,kind(0.d0) )
         !Z =  Z * cmplx( T0_Proposal_ratio, 0.d0,kind(0.d0))
         Ratio(2) = sum(Ratio_2_array)
-        call ham%Delta_S0_global(Nsigma_old, delta, log_delta)
+        log_delta = ham%Get_Delta_S0_global(Nsigma_old)
         Ratio(2) = Ratio(2) + log_delta + log(T0_Proposal_ratio)
 
         Compute_Ratio_Global = Ratio(1)*exp(Ratio(2))
