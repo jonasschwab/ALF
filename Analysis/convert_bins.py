@@ -9,6 +9,16 @@ from argparse import ArgumentParser
 import h5py
 import f90nml
 
+def get_val(default_parameters, nml, nlist_name, par_name):
+    r"""Get value from namelist or return default value."""
+    nlist_name = nlist_name.lower()
+    par_name = par_name.lower()
+    try:
+        val = nml[nlist_name][par_name]
+    except KeyError:
+        val = default_parameters[nlist_name][par_name]['value']
+    return val
+
 
 def copy_parameters(sim_dir, hamiltonian_file):
     r"""Copy parameters from parameters file and hamiltonian to HDF5 file."""
@@ -17,20 +27,34 @@ def copy_parameters(sim_dir, hamiltonian_file):
     default_parameters = parse(hamiltonian_file)
     filename = os.path.join(sim_dir, 'data.h5')
 
+    print('ffobar', get_val(default_parameters, nml, 'var_ham_name', 'ham_name'))
+    print('ffobar1', get_val(default_parameters, nml, 'var_hubbard', 'mz'))
+    # Fix for Mz=true
+    if (get_val(default_parameters, nml, 'var_ham_name', 'ham_name').lower() == 'hubbard' and
+       get_val(default_parameters, nml, 'var_hubbard', 'mz')):
+        print('Applying Mz=true fix')
+        mz_fix = True
+    else:
+        mz_fix = False
+
     with h5py.File(filename, 'w') as f:
         for nlist_name, nlist in default_parameters.items():
             nlist_name = nlist_name.lower()
             groupname = f"parameters/{nlist_name}"
             f.create_group(groupname)
-            for par_name, par in nlist.items():
+            for par_name in nlist.keys():
                 par_name = par_name.lower()
-                try:
-                    val = nml[nlist_name][par_name]
-                except KeyError:
-                    val = par['value']
+                val = get_val(default_parameters, nml, nlist_name, par_name)
+                if mz_fix and nlist_name == 'var_model_generic':
+                    print(f'Applying Mz=true fix for parameter {par_name}')
+                    # Fix for Mz=true
+                    if par_name == 'n_sun':
+                        val = val // 2
+                    if par_name == 'n_fl':
+                        val = 2
 
-                if isinstance(par['value'], bool):
-                    val = int(par['value'])
+                if isinstance(val, bool):
+                    val = int(val)
                 
                 if isinstance(val, str):
                     f[groupname].attrs.create(
