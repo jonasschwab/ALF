@@ -27,8 +27,6 @@ def copy_parameters(sim_dir, hamiltonian_file):
     default_parameters = parse(hamiltonian_file)
     filename = os.path.join(sim_dir, 'data.h5')
 
-    print('ffobar', get_val(default_parameters, nml, 'var_ham_name', 'ham_name'))
-    print('ffobar1', get_val(default_parameters, nml, 'var_hubbard', 'mz'))
     # Fix for Mz=true
     if (get_val(default_parameters, nml, 'var_ham_name', 'ham_name').lower() == 'hubbard' and
        get_val(default_parameters, nml, 'var_hubbard', 'mz')):
@@ -46,7 +44,6 @@ def copy_parameters(sim_dir, hamiltonian_file):
                 par_name = par_name.lower()
                 val = get_val(default_parameters, nml, nlist_name, par_name)
                 if mz_fix and nlist_name == 'var_model_generic':
-                    print(f'Applying Mz=true fix for parameter {par_name}')
                     # Fix for Mz=true
                     if par_name == 'n_sun':
                         val = val // 2
