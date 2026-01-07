@@ -42,7 +42,7 @@ runs:
         if echo "$MODE" | grep -iq -e "serial" -e "noMPI"; then
           "$ALF_DIR/Prog/ALF.out"
         else
-          mpiexec -n 4 --oversubscribe "$ALF_DIR/Prog/ALF.out"
+          mpiexec -n 4 --oversubscribe "$ALF_DIR/Prog/ALF.out"  # test
         fi
         if echo "$MODE" | grep -iq -e "TEMPERING" -e "PARALLEL_PARAMS"; then cd Temp_0; fi
         if echo "$CONFIG_ARGS" | grep -iq "HDF5"; then
