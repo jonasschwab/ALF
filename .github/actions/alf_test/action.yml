@@ -42,7 +42,7 @@ runs:
         if echo "$MODE" | grep -iq -e "serial" -e "noMPI"; then
           "$ALF_DIR/Prog/ALF.out"
         else
-          mpiexec -n 2 "$ALF_DIR/Prog/ALF.out" # only 2 cores available in githubs runners
+          mpiexec -n 4 --oversubscribe "$ALF_DIR/Prog/ALF.out"
         fi
         if echo "$MODE" | grep -iq -e "TEMPERING" -e "PARALLEL_PARAMS"; then cd Temp_0; fi
         if echo "$CONFIG_ARGS" | grep -iq "HDF5"; then
