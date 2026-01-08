@@ -9,7 +9,6 @@ runs:
   using: "composite"
   steps:
     - name: macOS Toolchain install
-
       if: runner.os == 'macOS'
       shell: bash
       run: |
@@ -22,7 +21,6 @@ runs:
         ln -fs ${bindir}/g++-${gcc_version} /usr/local/bin/g++
 
     - name: Build & Test
-
       shell: bash
       env:
         ARGS: ${{ inputs.args }}
@@ -54,6 +52,10 @@ runs:
         else
           "$ALF_DIR/Analysis/ana.out" *
         fi
+
+    - name: Run unit tests
+      shell: bash
+      run: |
         mkdir -p "$ALF_DIR/testsuite/tests"
         cd "$ALF_DIR/testsuite/tests"
         if echo "$ALF_FC" | grep -q "mpiifort -fc=ifx"; then exit 0; fi
