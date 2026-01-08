@@ -48,7 +48,9 @@ runs:
         if echo "$MODE" | grep -iq -e "serial" -e "noMPI"; then
           "$ALF_DIR/Prog/ALF.out"
         else
-          OMPI_MCA_rmaps_base_oversubscribe=true mpiexec -n 4 "$ALF_DIR/Prog/ALF.out"
+          MPI_OPTS="-n 4"
+          if mpiexec --version | grep -iq 'Open MPI'; then MPI_OPTS="$MPI_OPTS --use-hwthread-cpus"; fi
+          mpiexec $MPI_OPTS "$ALF_DIR/Prog/ALF.out"
         fi
         if echo "$MODE" | grep -iq -e "TEMPERING" -e "PARALLEL_PARAMS"; then cd Temp_0; fi
         if echo "$CONFIG_ARGS" | grep -iq "HDF5"; then
