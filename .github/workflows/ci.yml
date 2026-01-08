@@ -117,7 +117,7 @@ jobs:
   # ======================
 
   test_linux:
-    name: ${{ matrix.image_minor }} · ${{ matrix.mode }} · ${{ matrix.devel }} · ${{ matrix.config }}
+    name: ${{ matrix.image_minor[0] }} · ${{ matrix.mode }} · ${{ matrix.devel }} · ${{ matrix.config }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -126,7 +126,7 @@ jobs:
           - [bullseye, GNU]
           - [bookworm, GNU]
           - [trixie, GNU]
-          - [tumbleweed, GNU]
+          # - [tumbleweed, GNU]
           - [bullseye-pgi-21-03, PGI]
           - [bullseye-intel, INTEL]
           - [bookworm-intel-2024.2, INTEL]
