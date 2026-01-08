@@ -29,6 +29,7 @@ runs:
         OMPI_ALLOW_RUN_AS_ROOT: 1 # needed for mpi runnig as root, needed by github runner
         OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
       run: |
+        nproc
         . ./configure.sh $ARGS
         echo $ALF_FC
         $ALF_FC --version
