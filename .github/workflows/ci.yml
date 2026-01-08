@@ -128,7 +128,6 @@ jobs:
         config: ["", "HDF5"]
     container:
       image: ghcr.io/alf-qmc/alf-container/alf-requirements/${{ matrix.image_minor }}
-      options: --user 0
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/alf_test
@@ -145,7 +144,6 @@ jobs:
         config: ["", "HDF5"]
     container:
       image: ghcr.io/alf-qmc/alf-container/alf-requirements/bullseye-openblas
-      options: --user 0
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/alf_test
@@ -163,7 +161,6 @@ jobs:
         config: ["", "HDF5"]
     container:
       image: ghcr.io/alf-qmc/alf-container/alf-requirements/bullseye-pgi-21-03
-      options: --user 0
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/alf_test
@@ -183,7 +180,6 @@ jobs:
         config: ["", "HDF5"]
     container:
       image: ghcr.io/alf-qmc/alf-container/alf-requirements/${{ matrix.image_minor }}
-      options: --user 0
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/alf_test
@@ -201,7 +197,6 @@ jobs:
         config: ["", "HDF5"]
     container:
       image: ghcr.io/alf-qmc/alf-container/alf-requirements/bookworm-intel
-      options: --user 0
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/alf_test
@@ -230,7 +225,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/alf-qmc/alf-container/alf-requirements/bullseye
-      options: --user 0
     steps:
       - uses: actions/checkout@v4
       - name: Run Valgrind
