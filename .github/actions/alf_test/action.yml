@@ -20,17 +20,21 @@ runs:
         ln -fs ${bindir}/gcc-${gcc_version} /usr/local/bin/gcc
         ln -fs ${bindir}/g++-${gcc_version} /usr/local/bin/g++
 
+    - name: Get number of processors
+      shell: bash
+      run: |
+        if [[ $(uname) == "Darwin" ]]; then
+          NPROC=$(sysctl -n hw.ncpu)
+        else
+          NPROC=$(nproc)
+        fi
+        echo "There are $NPROC processors available."
+
     - name: Build & Test
       shell: bash
       env:
         ARGS: ${{ inputs.args }}
       run: |
-        if [[ $(uname) == "Darwin" ]]; then
-          export NPROC=$(sysctl -n hw.ncpu)
-        else
-          export NPROC=$(nproc)
-        fi
-        echo "There are $NPROC processors available."
         . ./configure.sh $ARGS
         echo $ALF_FC
         $ALF_FC --version
@@ -55,7 +59,10 @@ runs:
 
     - name: Run unit tests
       shell: bash
+      env:
+        ARGS: ${{ inputs.args }}
       run: |
+        . ./configure.sh $ARGS
         mkdir -p "$ALF_DIR/testsuite/tests"
         cd "$ALF_DIR/testsuite/tests"
         if echo "$ALF_FC" | grep -q "mpiifort -fc=ifx"; then exit 0; fi
