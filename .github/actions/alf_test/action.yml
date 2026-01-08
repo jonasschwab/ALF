@@ -27,7 +27,12 @@ runs:
       env:
         ARGS: ${{ inputs.args }}
       run: |
-        nproc
+        if [[ $(uname) == "Darwin" ]]; then
+          export NPROC=$(sysctl -n hw.ncpu)
+        else
+          export NPROC=$(nproc)
+        fi
+        echo "There are $NPROC processors available."
         . ./configure.sh $ARGS
         echo $ALF_FC
         $ALF_FC --version
