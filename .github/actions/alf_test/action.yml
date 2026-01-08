@@ -13,7 +13,7 @@ runs:
       shell: bash
       run: |
         brew update
-        brew install gcc cmake open-mpi
+        brew install gcc cmake mpich
         gcc_version=$(brew list --versions gcc | grep -o '[0-9]\+' | head -1)
         bindir=$(brew --prefix)/bin
         ln -fs ${bindir}/gfortran-${gcc_version} /usr/local/bin/gfortran
