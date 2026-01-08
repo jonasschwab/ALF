@@ -116,92 +116,36 @@ jobs:
   # Linux tests
   # ======================
 
-  test_linux_gnu:
+  test_linux:
     name: ${{ matrix.image_minor }} · ${{ matrix.mode }} · ${{ matrix.devel }} · ${{ matrix.config }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        image_minor: [bullseye, bookworm, trixie]
+        image_minor: 
+          - [bullseye, GNU]
+          - [bookworm, GNU]
+          - [trixie, GNU]
+          - [tumbleweed, GNU]
+          - [bullseye-pgi-21-03, PGI]
+          - [bullseye-intel, INTEL]
+          - [bookworm-intel-2024.2, INTEL]
+          - [bookworm-intel, INTELLLVM]
         mode: [noMPI, MPI, TEMPERING, PARALLEL_PARAMS]
         devel: ["", "Devel"]
         config: ["", "HDF5"]
+        include:
+          - image_minor: [bullseye-openblas, GNU]
+            mode: [noMPI]
+            devel: ["", "Devel"]
+            config: ["", "HDF5"]
     container:
-      image: ghcr.io/alf-qmc/alf-container/alf-requirements/${{ matrix.image_minor }}
+      image: ghcr.io/alf-qmc/alf-container/alf-requirements/${{ matrix.image_minor[0] }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/alf_test
         with:
-          args: GNU ${{ matrix.mode }} ${{ matrix.devel }} ${{ matrix.config }}
-
-  test_linux_gnu_openblas:
-    name: bullseye-openblas · ${{ matrix.devel }} · ${{ matrix.config }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        devel: ["", "Devel"]
-        config: ["", "HDF5"]
-    container:
-      image: ghcr.io/alf-qmc/alf-container/alf-requirements/bullseye-openblas
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/alf_test
-        with:
-          args: GNU ${{ matrix.mode }} ${{ matrix.devel }} ${{ matrix.config }}
-
-  test_linux_pgi:
-    name: bullseye-pgi-21-03 · ${{ matrix.mode }} · ${{ matrix.devel }} · ${{ matrix.config }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: [noMPI, MPI, TEMPERING, PARALLEL_PARAMS]
-        devel: ["", "Devel"]
-        config: ["", "HDF5"]
-    container:
-      image: ghcr.io/alf-qmc/alf-container/alf-requirements/bullseye-pgi-21-03
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/alf_test
-        with:
-          with:
-          args: PGI ${{ matrix.mode }} ${{ matrix.devel }} ${{ matrix.config }}
-
-  test_linux_intel:
-    name: ${{ matrix.image_minor }} · ${{ matrix.mode }} · ${{ matrix.devel }} · ${{ matrix.config }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        image_minor: [bullseye-intel, bookworm-intel-2024.2]
-        mode: [noMPI, MPI, TEMPERING, PARALLEL_PARAMS]
-        devel: ["", "Devel"]
-        config: ["", "HDF5"]
-    container:
-      image: ghcr.io/alf-qmc/alf-container/alf-requirements/${{ matrix.image_minor }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/alf_test
-        with:
-          args: INTEL ${{ matrix.mode }} ${{ matrix.devel }} ${{ matrix.config }}
-
-  test_linux_intelllvm:
-    name: bookworm-intel · ${{ matrix.mode }} · ${{ matrix.devel }} · ${{ matrix.config }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: [noMPI, MPI, TEMPERING, PARALLEL_PARAMS]
-        devel: ["", "Devel"]
-        config: ["", "HDF5"]
-    container:
-      image: ghcr.io/alf-qmc/alf-container/alf-requirements/bookworm-intel
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/alf_test
-        with:
-          args: INTELLLVM ${{ matrix.mode }} ${{ matrix.devel }} ${{ matrix.config }}
+          args: ${{ matrix.image_minor[1] }} ${{ matrix.mode }} ${{ matrix.devel }} ${{ matrix.config }}
 
   test_macos:
     name: macOS · ${{ matrix.mode }} · ${{ matrix.devel }}
@@ -211,6 +155,7 @@ jobs:
       matrix:
         mode: [noMPI, MPI, TEMPERING, PARALLEL_PARAMS]
         devel: ["", "Devel"]
+        config: [""]  # TODO: Enable fast access to HDF5 on macOS runners
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/alf_test
