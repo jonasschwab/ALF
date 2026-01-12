@@ -20,7 +20,7 @@ concurrency:
 jobs:
   lint_stopcommands:
     name: Lint Fortran STOP statements
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@v4
       - name: Check for forbidden STOP/ERROR STOP
@@ -34,7 +34,7 @@ jobs:
 
   create_doc:
     name: Build LaTeX documentation (doc.pdf)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: [lint_stopcommands]
     container:
       image: aergus/latex
@@ -62,7 +62,7 @@ jobs:
 
   create_doxygen:
     name: Generate Doxygen HTML
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: [lint_stopcommands]
     steps:
       - uses: actions/checkout@v4
@@ -82,7 +82,7 @@ jobs:
 
   deploy_pages:
     name: Deploy GitHub Pages (master only)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: [create_doc, create_doxygen]
     if: github.ref == 'refs/heads/master'
     environment:
