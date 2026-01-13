@@ -29,7 +29,17 @@ jobs:
       image: git.physik.uni-wuerzburg.de:25812/z03/pdi/debian:bookworm-buildd
     strategy:
       matrix:
-        env_name: ${{ fromJson(needs.prepare.outputs.env_names) }}
+        image_minor: 
+          - [bullseye, GNU]
+          - [bookworm, GNU]
+          - [trixie, GNU]
+          - [bullseye-openblas, GNU]
+          # - [tumbleweed, GNU]
+          - [bullseye-pgi-21-03, PGI]
+          - [bookworm-pgi-24-09, PGI]
+          - [bullseye-intel, INTEL]
+          - [bookworm-intel-2024.2, INTEL]
+          - [bookworm-intel, INTELLLVM]
     steps:
       - name: Install pyALF
         run: pip install --no-deps pyALF
