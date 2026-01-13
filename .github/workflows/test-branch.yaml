@@ -50,6 +50,7 @@ jobs:
         with:
           ref: ${{ github.event.inputs.test_branch || github.ref_name }}
       - run: alf_test_branch
+            --alfdir $PWD
             --sim_pars $PWD/testsuite/test_branch_parameters.json
             --machine ${{ matrix.image_minor[1] }}
             --mpi
