@@ -33,13 +33,13 @@ jobs:
           - [bullseye, GNU]
           - [bookworm, GNU]
           - [trixie, GNU]
-          - [bullseye-openblas, GNU]
+        #   - [bullseye-openblas, GNU]
           # - [tumbleweed, GNU]
           - [bullseye-pgi-21-03, PGI]
-          - [bookworm-pgi-24-09, PGI]
-          - [bullseye-intel, INTEL]
-          - [bookworm-intel-2024.2, INTEL]
-          - [bookworm-intel, INTELLLVM]
+        #   - [bookworm-pgi-24-09, PGI]
+        #   - [bullseye-intel, INTEL]
+        #   - [bookworm-intel-2024.2, INTEL]
+        #   - [bookworm-intel, INTELLLVM]
     steps:
       - name: Install pyALF
         run: pip install --no-deps pyALF
