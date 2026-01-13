@@ -34,12 +34,12 @@ jobs:
           - [bookworm, GNU]
           - [trixie, GNU]
         #   - [bullseye-openblas, GNU]
-          # - [tumbleweed, GNU]
+          - [tumbleweed, GNU]
           - [bullseye-pgi-21-03, PGI]
-        #   - [bookworm-pgi-24-09, PGI]
-        #   - [bullseye-intel, INTEL]
-        #   - [bookworm-intel-2024.2, INTEL]
-        #   - [bookworm-intel, INTELLLVM]
+          - [bookworm-pgi-24-09, PGI]
+          - [bullseye-intel, INTEL]
+          - [bookworm-intel-2024.2, INTEL]
+          - [bookworm-intel, INTELLLVM]
     steps:
       - name: Install pyALF
         run: pip install --no-deps pyALF
@@ -59,11 +59,3 @@ jobs:
             --devel
             --no_sim
             --no_analyze
-    #   - uses: actions/checkout@v4
-    #   - name: Download generated config artifact
-    #     uses: actions/download-artifact@v4
-    #     with:
-    #       name: generated-config
-    #   - name: Compile test branch
-    #     run: |
-    #       cat generated-config/generated-config.yml
