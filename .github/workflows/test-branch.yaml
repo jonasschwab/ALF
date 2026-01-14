@@ -57,6 +57,6 @@ jobs:
             --branch_T ${{ github.event.inputs.test_branch || github.ref_name }}
             --branch_R master
             --devel
-            --mpiexec_args "--use-hwthread-cpus"
+            --mpiexec_args="--use-hwthread-cpus"
             # --no_sim
             # --no_analyze
