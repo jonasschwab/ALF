@@ -53,7 +53,8 @@ jobs:
       - name: Check if mpiexec supports --use-hwthread-cpus
         id: mpi_flag_check
         run: mpiexec --version | grep -iq -e 'Open MPI' -e 'OpenRTE' &&
-             echo "value='--mpiexec_args=--use-hwthread-cpus'" >> $GITHUB_OUTPUT
+             echo "value='--mpiexec_args=--use-hwthread-cpus'" >> $GITHUB_OUTPUT ||
+             echo "No Open MPI, so --use-hwthread-cpus not needed"
       - name: Run ALF test vs main branch
         run: alf_test_branch
             --alfdir $PWD
