@@ -22,14 +22,14 @@ jobs:
 #     #     with:
 #     #       name: generated-config
 
-  compile:
+  test_branch:
     # needs: prepare
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/alf-qmc/alf-container/pyalf-requirements/${{ matrix.image_minor[0] }}
+      image: ghcr.io/alf-qmc/alf-container/pyalf-requirements/${{ matrix.image[0] }}
     strategy:
       matrix:
-        image_minor: 
+        image: 
           - [bullseye, GNU]
           - [bookworm, GNU]
           - [trixie, GNU]
@@ -52,17 +52,22 @@ jobs:
       - name: Check if mpiexec supports --use-hwthread-cpus
         id: mpi_flag_check
         run: mpiexec --version | grep -iq -e 'Open MPI' -e 'OpenRTE' &&
-             echo "value='--use-hwthread-cpus'" >> $GITHUB_OUTPUT ||
+             echo "value='--mpiexec_args=--use-hwthread-cpus'" >> $GITHUB_OUTPUT ||
              echo "value=''" >> $GITHUB_OUTPUT
       - name: Run ALF test vs main branch
         run: alf_test_branch
             --alfdir $PWD
             --sim_pars $PWD/testsuite/test_branch_parameters.json
-            --machine ${{ matrix.image_minor[1] }}
+            --machine ${{ matrix.image[1] }}
             --mpi
             --branch_T ${{ github.event.inputs.test_branch || github.ref_name }}
             --branch_R master
             --devel
-            --mpiexec_args="${{ steps.mpi_flag_check.outputs.value }}"
-            # --no_sim
-            # --no_analyze
+            ${{ steps.mpi_flag_check.outputs.value }}
+      - name: Upload test branch results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-branch-results-${{ matrix.image }}
+          path: 
+            test.txt
