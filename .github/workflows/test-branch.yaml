@@ -80,14 +80,12 @@ jobs:
       fail-fast: false
       matrix:
         compiler: [GNU]
-    cache:
-      key: macos-HDF5
-      paths:
-        - HDF5/
     steps:
       - name: Install pyALF
         run: pipx install pyALF
+
       - name: macOS Toolchain install
+        id: mac_toolchain
         run: |
           brew update
           brew install mpich
@@ -96,12 +94,21 @@ jobs:
           ln -fs ${bindir}/gfortran-${gcc_version} /usr/local/bin/gfortran
           ln -fs ${bindir}/gcc-${gcc_version} /usr/local/bin/gcc
           ln -fs ${bindir}/g++-${gcc_version} /usr/local/bin/g++
+          echo "gcc_version=$gcc_version" >> $GITHUB_OUTPUT
+
       - uses: actions/checkout@v6
         with:
           ref: master
       - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.inputs.test_branch || github.ref_name }}
+
+      - name: Restore HDF5 cache
+        uses: actions/cache@v5
+        with:
+          key: macos-HDF5-${{ steps.mac_toolchain.outputs.gcc_version }}
+          path: HDF5/*/
+
       - name: Run ALF test vs main branch on macOS
         run: OMP_NUM_THREADS=1 alf_test_branch
             --alfdir $PWD
@@ -112,6 +119,13 @@ jobs:
             --branch_T ${{ github.event.inputs.test_branch || github.ref_name }}
             --branch_R master
             --devel
+
+      - name: Save HDF5 cache
+        uses: actions/cache@v5
+        with:
+          key: macos-HDF5-${{ steps.mac_toolchain.outputs.gcc_version }}
+          path: HDF5/*/
+
       - name: Upload test branch results macOS
         if: always()
         uses: actions/upload-artifact@v6
