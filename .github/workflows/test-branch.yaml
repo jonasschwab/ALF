@@ -61,6 +61,7 @@ jobs:
             --sim_pars $PWD/testsuite/test_branch_parameters.json
             --machine ${{ matrix.image[1] }}
             --mpi
+            --n_mpi 4
             --branch_T ${{ github.event.inputs.test_branch || github.ref_name }}
             --branch_R master
             --devel
@@ -69,6 +70,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: test-branch-results-${{ matrix.image }}
+          name: test-branch-results-${{ matrix.image[0] }}-${{ matrix.image[1] }}
           path: 
             test.txt
