@@ -49,7 +49,13 @@ jobs:
       - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.inputs.test_branch || github.ref_name }}
-      - run: alf_test_branch
+      - name: Check if mpiexec supports --use-hwthread-cpus
+        id: mpi_flag_check
+        run: mpiexec --version | grep -iq -e 'Open MPI' -e 'OpenRTE' &&
+             echo "value='--use-hwthread-cpus'" >> $GITHUB_OUTPUT ||
+             echo "value=''" >> $GITHUB_OUTPUT
+      - name: Run ALF test vs main branch
+        run: alf_test_branch
             --alfdir $PWD
             --sim_pars $PWD/testsuite/test_branch_parameters.json
             --machine ${{ matrix.image_minor[1] }}
@@ -57,6 +63,6 @@ jobs:
             --branch_T ${{ github.event.inputs.test_branch || github.ref_name }}
             --branch_R master
             --devel
-            --mpiexec_args="--use-hwthread-cpus"
+            --mpiexec_args="${{ steps.mpi_flag_check.outputs.value }}"
             # --no_sim
             # --no_analyze
