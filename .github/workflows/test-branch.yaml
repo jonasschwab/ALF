@@ -80,6 +80,10 @@ jobs:
       fail-fast: false
       matrix:
         compiler: [GNU]
+    cache:
+      key: macos-HDF5
+      paths:
+        - HDF5/
     steps:
       - name: Install pyALF
         run: pipx install pyALF
@@ -99,7 +103,7 @@ jobs:
         with:
           ref: ${{ github.event.inputs.test_branch || github.ref_name }}
       - name: Run ALF test vs main branch on macOS
-        run: alf_test_branch
+        run: OMP_NUM_THREADS=1 alf_test_branch
             --alfdir $PWD
             --sim_pars $PWD/testsuite/test_branch_parameters.json
             --machine ${{ matrix.compiler }}
