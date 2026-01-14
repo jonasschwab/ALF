@@ -3,25 +3,6 @@ name: Test vs main branch
 on: workflow_dispatch
 
 jobs:
-#   prepare:
-#     runs-on: ubuntu-latest
-#     outputs:
-#       env_names: ${{ steps.set.outputs.env_names }}
-#       test_names: ${{ steps.set.outputs.test_names }}
-#     steps:
-#       - id: set
-#         run: |
-#           echo "env_names=['Bullseye', 'Bookworm']" >> $GITHUB_OUTPUT
-#           echo "test_names=['Hubbard_N_Leg_Ladder_temper', 'Langevin', 'Langevin_1']" >> $GITHUB_OUTPUT
-#     #   - name: Prepare test branch
-#     #     run: |
-#     #       python3 ./testsuite/test_branch_generate_config.py
-#     #       cat generated-config.yml >> $GITHUB_OUTPUT
-#     #   - name: Upload generated config artifact
-#     #     uses: actions/upload-artifact@v4
-#     #     with:
-#     #       name: generated-config
-
   test_branch:
     # needs: prepare
     runs-on: ubuntu-latest
@@ -110,7 +91,7 @@ jobs:
           path: HDF5/*/
 
       - name: Run ALF test vs main branch on macOS
-        run: OMP_NUM_THREADS=1 alf_test_branch
+        run: alf_test_branch
             --alfdir $PWD
             --sim_pars $PWD/testsuite/test_branch_parameters.json
             --machine ${{ matrix.compiler }}
