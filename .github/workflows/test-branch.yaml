@@ -120,12 +120,6 @@ jobs:
             --branch_R master
             --devel
 
-      - name: Save HDF5 cache
-        uses: actions/cache@v5
-        with:
-          key: macos-HDF5-${{ steps.mac_toolchain.outputs.gcc_version }}
-          path: HDF5/*/
-
       - name: Upload test branch results macOS
         if: always()
         uses: actions/upload-artifact@v6
