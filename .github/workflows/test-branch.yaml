@@ -73,3 +73,45 @@ jobs:
           name: test-branch-results-${{ matrix.image[0] }}-${{ matrix.image[1] }}
           path: 
             test.txt
+  
+  test_branch_macos:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [GNU]
+    steps:
+      - name: Install pyALF
+        run: pip install --no-deps pyALF
+      - name: macOS Toolchain install
+        run: |
+          brew update
+          brew install mpich
+          gcc_version=$(brew list --versions gcc | grep -o '[0-9]\+' | head -1)
+          bindir=$(brew --prefix)/bin
+          ln -fs ${bindir}/gfortran-${gcc_version} /usr/local/bin/gfortran
+          ln -fs ${bindir}/gcc-${gcc_version} /usr/local/bin/gcc
+          ln -fs ${bindir}/g++-${gcc_version} /usr/local/bin/g++
+      - uses: actions/checkout@v6
+        with:
+          ref: master
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.inputs.test_branch || github.ref_name }}
+      - name: Run ALF test vs main branch on macOS
+        run: alf_test_branch
+            --alfdir $PWD
+            --sim_pars $PWD/testsuite/test_branch_parameters.json
+            --machine ${{ matrix.compiler }}
+            --mpi
+            --n_mpi 4
+            --branch_T ${{ github.event.inputs.test_branch || github.ref_name }}
+            --branch_R master
+            --devel
+      - name: Upload test branch results macOS
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-branch-results-macos-${{ matrix.compiler }}
+          path: 
+            test.txt
