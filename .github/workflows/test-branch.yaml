@@ -82,7 +82,7 @@ jobs:
         compiler: [GNU]
     steps:
       - name: Install pyALF
-        run: pip install --no-deps pyALF
+        run: pipx install pyALF
       - name: macOS Toolchain install
         run: |
           brew update
