@@ -1,0 +1,80 @@
+name: Test vs given ED reference results
+on: workflow_dispatch
+
+jobs:
+  prepare_matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      test_specs: ${{ steps.set-matrix.outputs.test_specs }}
+    steps:
+      - id: set-matrix
+        run: |
+          echo "test_specs={'hubbard_finT_chain':, 'hubbard_T0_chain'}" >> $GITHUB_OUTPUT
+          echo "env_names=['bullseye', 'bookworm', 'trixie']" >> $GITHUB_OUTPUT
+  compile:
+    needs: prepare_matrix
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/alf-qmc/alf-container/pyalf-requirements/${{ matrix.image[0] }}
+    strategy:
+      fail-fast: false
+      matrix:
+        image: 
+          - [bullseye, GNU]
+          - [bookworm, GNU]
+          - [trixie, GNU]
+    steps:
+      - name: Install pyALF
+        run: pip install --no-deps pyALF
+      - uses: actions/checkout@v6
+      - name: Compile ALF
+        run: cd ${{ matrix.test_dir }} && ../compile.py ${{ matrix.image[1] }}
+      - name: Upload compiled ALF binary and test directory
+        uses: actions/upload-artifact@v6
+        with:
+          name: simdir-${{ matrix.test_dir }}-${{ matrix.image[0] }}-${{ matrix.image[1] }}
+          path: ${{ matrix.test_dir }}
+
+  simulate:
+    needs: compile
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/alf-qmc/alf-container/pyalf-requirements/${{ matrix.image[0] }}
+    strategy:
+      fail-fast: false
+      matrix:
+        test_name: ${{ fromJson(needs.prepare_matrix.outputs.test_names) }}
+        image: 
+          - [bullseye, GNU]
+          - [bookworm, GNU]
+          - [trixie, GNU]
+    steps:
+      - name: Download compiled ALF binary
+        uses: actions/download-artifact@v6
+        with:
+          name: simdir-${{ matrix.test_dir }}-${{ matrix.image[0] }}-${{ matrix.image[1] }}
+      - name: Run ALF test vs main branch
+        run: cd ${{ matrix.test_dir }}/$CI_NODE_INDEX && ../ALF.out
+
+      - name: Upload simulation results
+        uses: actions/upload-artifact@v6
+        with:
+          name: simulation-results-${{ matrix.test_name }}-${{ matrix.image[1] }}-${{ matrix.env_name }}
+          path: ${{ matrix.test_dir }}/$CI_NODE_INDEX
+
+  analyze:
+    needs: simulate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install pyALF
+        run: pip install --no-deps pyALF
+      - name: Analyze simulation results
+        run: cd ${{ matrix.test_dir }} && ../analysis.py
+      - name: Upload compiled ALF binary and test directory
+        uses: actions/upload-artifact@v6
+        with:
+          name: simdir-${{ matrix.test_dir }}-${{ matrix.image[0] }}-${{ matrix.image[1] }}
+          path: |
+            ${{ matrix.test_dir }}/results.json
+            ${{ matrix.test_dir }}/test.png
+            ${{ matrix.test_dir }}/spec.yaml
