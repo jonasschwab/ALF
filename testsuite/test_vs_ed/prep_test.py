@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+import json
 import os
 import sys
 import yaml
 import copy
 
-pipeline_config = yaml.load("""
+pipeline_config = yaml.safe_load("""
 default:
   tags:
     - k8s
@@ -72,7 +73,7 @@ summarize:
       - $TEST_DIR/test.png
       - $TEST_DIR/spec.yaml
     when: always
-""", yaml.Loader)
+""")
 
 
 def prep_runs(test_name, test_spec, env_name, env_spec):
@@ -115,11 +116,30 @@ if __name__ == "__main__":
     except IndexError:
         specs_file = "testsuite/test_vs_ed/test_specs.yaml"
     with open(specs_file, 'r', encoding='UTF-8') as f:
-        test_specs = yaml.load(f, yaml.Loader)
+        test_specs = yaml.safe_load(f)
+    
+    compile_matrix = []
+    simulation_matrix = []
+    analysis_matrix = []
 
     for test_name, test_spec in test_specs.items():
         for env_name, env_spec in test_spec['environments'].items():
-            prep_runs(test_name, test_spec, env_name, env_spec)
+            # prep_runs(test_name, test_spec, env_name, env_spec)
+            print(env_spec)
+            compile_matrix.append({
+                'test_dir': f'testsuite/test_vs_ed/{test_name}_{env_name}',
+                'machine': env_spec['variables']['MACHINE'],
+                'image': env_spec['image'],
+            })
+            for i, _ in enumerate(test_spec["sim_dicts"]):
+                simulation_matrix.append({
+                    'test_dir': f'testsuite/test_vs_ed/{test_name}_{env_name}',
+                    'machine': env_spec['variables']['MACHINE'],
+                    'image': env_spec['image'],
+                    'CI_NODE_INDEX': i+1,
+                })
+    print(f'compile_matrix={json.dumps(compile_matrix)}')
+    print(f'simulation_matrix={json.dumps(simulation_matrix)}')
 
     with open('generated-config.yml', 'w', encoding='UTF-8') as f:
         f.write(yaml.dump(pipeline_config))
