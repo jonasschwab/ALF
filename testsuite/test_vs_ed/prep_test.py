@@ -125,7 +125,6 @@ if __name__ == "__main__":
     for test_name, test_spec in test_specs.items():
         for env_name, env_spec in test_spec['environments'].items():
             # prep_runs(test_name, test_spec, env_name, env_spec)
-            print(env_spec)
             compile_matrix.append({
                 'test_dir': f'testsuite/test_vs_ed/{test_name}_{env_name}',
                 'machine': env_spec['variables']['MACHINE'],
@@ -139,7 +138,7 @@ if __name__ == "__main__":
                     'CI_NODE_INDEX': i+1,
                 })
     
-    with open(sys.getenv('GITHUB_OUTPUT'), 'w+', encoding='UTF-8') as f:
+    with open(os.getenv('GITHUB_OUTPUT', 'test.json'), 'w+', encoding='UTF-8') as f:
       f.write(f'compile_matrix={json.dumps(compile_matrix)}\n')
       f.write(f'simulation_matrix={json.dumps(simulation_matrix)}')
 
