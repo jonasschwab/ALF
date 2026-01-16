@@ -38,6 +38,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: prepared-test-directories
+          path: testsuite/test_vs_ed/
       - run: ls -la $PWD
       - run: ls -la testsuite/test_vs_ed/
       - run: ls -la ${{ matrix.test_dir }}
@@ -63,6 +64,10 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: simdir-${{ matrix.test_dir }}-${{ matrix.image }}-${{ matrix.machine }}
+          path: testsuite/test_vs_ed/
+      - run: ls -la $PWD
+      - run: ls -la testsuite/test_vs_ed/
+      - run: ls -la ${{ matrix.test_dir }}
       - name: Run ALF test vs main branch
         run: cd ${{ matrix.test_dir }}/$CI_NODE_INDEX && ../ALF.out
 
@@ -81,6 +86,8 @@ jobs:
         run: pip install --no-deps pyALF
       - name: Download simulation results
         uses: actions/download-artifact@v7
+        with:
+          path: testsuite/test_vs_ed/
       - name: Analyze simulation results
         run: |
           cd testsuite/test_vs_ed
