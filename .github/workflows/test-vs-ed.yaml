@@ -8,11 +8,10 @@ jobs:
       compile_matrix: ${{ steps.set-matrix.outputs.compile_matrix }}
       simulation_matrix: ${{ steps.set-matrix.outputs.simulation_matrix }}
     steps:
+      - uses: actions/checkout@v6
+
       - id: set-matrix
-        run: |
-          ./testsuite/test_vs_ed/prep_test.py
-          echo "test_specs={'hubbard_finT_chain':, 'hubbard_T0_chain'}" >> $GITHUB_OUTPUT
-          echo "env_names=['bullseye', 'bookworm', 'trixie']" >> $GITHUB_OUTPUT
+        run: ./testsuite/test_vs_ed/prep_test.py
 
       - name: Upload prepared test directories
         uses: actions/upload-artifact@v6
