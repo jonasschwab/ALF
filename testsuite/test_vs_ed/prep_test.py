@@ -138,8 +138,10 @@ if __name__ == "__main__":
                     'image': env_spec['image'],
                     'CI_NODE_INDEX': i+1,
                 })
-    print(f'compile_matrix={json.dumps(compile_matrix)}')
-    print(f'simulation_matrix={json.dumps(simulation_matrix)}')
+    
+    with open(sys.getenv('GITHUB_OUTPUT'), 'w+', encoding='UTF-8') as f:
+      f.write(f'compile_matrix={json.dumps(compile_matrix)}\n')
+      f.write(f'simulation_matrix={json.dumps(simulation_matrix)}')
 
     with open('generated-config.yml', 'w', encoding='UTF-8') as f:
         f.write(yaml.dump(pipeline_config))
