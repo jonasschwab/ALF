@@ -126,13 +126,15 @@ if __name__ == "__main__":
         for env_name, env_spec in test_spec['environments'].items():
             prep_runs(test_name, test_spec, env_name, env_spec)
             compile_matrix.append({
-                'test_dir': f'testsuite/test_vs_ed/{test_name}_{env_name}',
+                'test_name': test_name,
+                'env_name': env_name,
                 'machine': env_spec['variables']['MACHINE'],
                 'image': env_spec['image'],
             })
             for i, _ in enumerate(test_spec["sim_dicts"]):
                 simulation_matrix.append({
-                    'test_dir': f'testsuite/test_vs_ed/{test_name}_{env_name}',
+                    'test_name': test_name,
+                    'env_name': env_name,
                     'machine': env_spec['variables']['MACHINE'],
                     'image': env_spec['image'],
                     'CI_NODE_INDEX': i+1,
