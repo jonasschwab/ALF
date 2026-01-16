@@ -70,7 +70,7 @@ jobs:
       - run: ls -la testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}
       - run: chmod +x testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}/ALF.out
       - name: Run ALF test vs main branch
-        run: cd testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}/${{ matrix.CI_NODE_INDEX }} && ../ALF.out
+        run: cd testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}/${{ matrix.CI_NODE_INDEX }} && mpiexec -n 2 ../ALF.out
 
       - name: Upload simulation results
         uses: actions/upload-artifact@v6
