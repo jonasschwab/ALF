@@ -1,5 +1,8 @@
 name: Test vs given ED reference results
-on: workflow_dispatch
+on: 
+  workflow_dispatch:
+  push:
+    branches: ["adapt-test-branch"]
 
 jobs:
   prepare_matrix:
@@ -35,7 +38,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: prepared-test-directories
-      - run: ls -la
+      - run: ls -la $PWD
       - run: ls -la testsuite/test_vs_ed/
       - run: ls -la ${{ matrix.test_dir }}
       - name: Compile ALF
