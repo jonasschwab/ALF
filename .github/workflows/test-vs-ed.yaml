@@ -41,14 +41,14 @@ jobs:
           path: testsuite/test_vs_ed/
       - run: ls -la $PWD
       - run: ls -la testsuite/test_vs_ed/
-      - run: ls -la ${{ matrix.test_dir }}
+      - run: ls -la testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}
       - name: Compile ALF
-        run: cd ${{ matrix.test_dir }} && ../compile.py ${{ matrix.machine }}
+        run: cd testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }} && ../compile.py ${{ matrix.machine }}
       - name: Upload compiled ALF binary and test directory
         uses: actions/upload-artifact@v6
         with:
-          name: simdir-${{ matrix.test_dir }}-${{ matrix.image }}-${{ matrix.machine }}
-          path: ${{ matrix.test_dir }}
+          name: simdir-${{ matrix.test_name }}-${{ matrix.env_name }}-${{ matrix.machine }}
+          path: testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}
 
   simulate:
     needs: [prepare_matrix, compile]
@@ -63,19 +63,19 @@ jobs:
       - name: Download compiled ALF binary
         uses: actions/download-artifact@v7
         with:
-          name: simdir-${{ matrix.test_dir }}-${{ matrix.image }}-${{ matrix.machine }}
+          name: simdir-${{ matrix.test_name }}-${{ matrix.env_name }}-${{ matrix.machine }}
           path: testsuite/test_vs_ed/
       - run: ls -la $PWD
       - run: ls -la testsuite/test_vs_ed/
-      - run: ls -la ${{ matrix.test_dir }}
+      - run: ls -la testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}
       - name: Run ALF test vs main branch
-        run: cd ${{ matrix.test_dir }}/$CI_NODE_INDEX && ../ALF.out
+        run: cd testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}/${{ matrix.CI_NODE_INDEX }} && ../ALF.out
 
       - name: Upload simulation results
         uses: actions/upload-artifact@v6
         with:
-          name: simulation-results-${{ matrix.test_name }}-${{ matrix.image }}-${{ matrix.machine }}
-          path: ${{ matrix.test_dir }}/${{ matrix.CI_NODE_INDEX }}
+          name: simulation-results-${{ matrix.test_name }}-${{ matrix.env_name }}-${{ matrix.machine }}
+          path: testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}/${{ matrix.CI_NODE_INDEX }}
 
   analyze:
     needs: simulate
