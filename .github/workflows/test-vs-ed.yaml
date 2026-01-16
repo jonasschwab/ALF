@@ -68,6 +68,7 @@ jobs:
       - run: ls -la $PWD
       - run: ls -la testsuite/test_vs_ed/
       - run: ls -la testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}
+      - run: chmod +x testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}/ALF.out
       - name: Run ALF test vs main branch
         run: cd testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}/${{ matrix.CI_NODE_INDEX }} && ../ALF.out
 
