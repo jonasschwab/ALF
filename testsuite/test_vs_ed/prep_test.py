@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
     for test_name, test_spec in test_specs.items():
         for env_name, env_spec in test_spec['environments'].items():
-            # prep_runs(test_name, test_spec, env_name, env_spec)
+            prep_runs(test_name, test_spec, env_name, env_spec)
             compile_matrix.append({
                 'test_dir': f'testsuite/test_vs_ed/{test_name}_{env_name}',
                 'machine': env_spec['variables']['MACHINE'],
