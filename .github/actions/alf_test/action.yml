@@ -10,6 +10,7 @@ runs:
   steps:
     - name: macOS Toolchain install
       if: runner.os == 'macOS'
+      id: mac_toolchain
       shell: bash
       run: |
         brew update
@@ -19,6 +20,7 @@ runs:
         ln -fs ${bindir}/gfortran-${gcc_version} /usr/local/bin/gfortran
         ln -fs ${bindir}/gcc-${gcc_version} /usr/local/bin/gcc
         ln -fs ${bindir}/g++-${gcc_version} /usr/local/bin/g++
+        echo "gcc_version=$gcc_version" >> $GITHUB_OUTPUT
 
     - name: Get number of processors
       shell: bash
@@ -29,6 +31,13 @@ runs:
           NPROC=$(nproc)
         fi
         echo "There are $NPROC processors available."
+
+    - name: Restore HDF5 cache
+      if: runner.os == 'macOS'
+      uses: actions/cache@v5
+      with:
+        key: macos-HDF5-${{ steps.mac_toolchain.outputs.gcc_version }}
+        path: HDF5/*/
 
     - name: Build & Test
       shell: bash
@@ -49,7 +58,7 @@ runs:
           "$ALF_DIR/Prog/ALF.out"
         else
           MPI_OPTS="-n 4"
-          if mpiexec --version | grep -iq -e 'Open MPI' -e 'OpenRTE'; then MPI_OPTS="$MPI_OPTS --use-hwthread-cpus"; fi
+          mpiexec --version | grep -iq -e 'Open MPI' -e 'OpenRTE' && MPI_OPTS="$MPI_OPTS --use-hwthread-cpus"
           mpiexec $MPI_OPTS "$ALF_DIR/Prog/ALF.out"
         fi
         if echo "$MODE" | grep -iq -e "TEMPERING" -e "PARALLEL_PARAMS"; then cd Temp_0; fi

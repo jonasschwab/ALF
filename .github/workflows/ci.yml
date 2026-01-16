@@ -152,7 +152,7 @@ jobs:
       matrix:
         mode: [noMPI, MPI, TEMPERING, PARALLEL_PARAMS]
         devel: ["", "Devel"]
-        config: [""]  # TODO: Enable fast access to HDF5 on macOS runners
+        config: ["", "HDF5"]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/alf_test
