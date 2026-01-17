@@ -75,7 +75,7 @@ jobs:
       - name: Upload simulation results
         uses: actions/upload-artifact@v6
         with:
-          name: simulation-results-${{ matrix.test_name }}-${{ matrix.env_name }}-${{ matrix.machine }}
+          name: simulation-results-${{ matrix.test_name }}-${{ matrix.env_name }}-${{ matrix.machine }}-${{ matrix.CI_NODE_INDEX }}
           path: testsuite/test_vs_ed/
 
   analyze:

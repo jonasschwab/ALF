@@ -22,6 +22,7 @@ if __name__ == "__main__":
             sim_root='.',
             sim_dir=f'{i+1}',
             machine=machine,
+            mpi=True,
         )
         sims.append(sim)
 
