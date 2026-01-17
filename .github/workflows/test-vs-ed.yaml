@@ -2,7 +2,7 @@ name: Test vs given ED reference results
 on: 
   workflow_dispatch:
   push:
-    branches: ["adapt-test-branch"]
+    branches: ["adapt-test-branch", "adapt-test-eq"]
 
 jobs:
   prepare_matrix:
