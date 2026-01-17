@@ -69,9 +69,10 @@ jobs:
       - name: Analyze simulation results
         run: |
           cd testsuite/test_vs_ed
-          for dir in */; do
-            cd "$dir" && ../analysis.py
-            cd ..
+          for i in $(ls prepared-test-directories); do
+            mv *${i}* prepared-test-directories/${i}
+            cd "prepared-test-directories/${i}" && ../../analysis.py
+            cd ../..
           done
       - name: Upload results
         uses: actions/upload-artifact@v6
