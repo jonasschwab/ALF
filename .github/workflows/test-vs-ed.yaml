@@ -64,13 +64,12 @@ jobs:
       - name: Download simulation results
         uses: actions/download-artifact@v7
       - run: ls -la $PWD
-      - run: ls -la testsuite/test_vs_ed/
-      - run: ls -la testsuite/test_vs_ed/*
+      - run: ls -la $PWD/*
       - name: Analyze simulation results
         run: |
           cd testsuite/test_vs_ed
           for i in $(ls prepared-test-directories); do
-            mv *${i}* prepared-test-directories/${i}
+            mv simulation-results-${i}* prepared-test-directories/${i}
             cd "prepared-test-directories/${i}" && ../../analysis.py
             cd ../..
           done
