@@ -67,7 +67,6 @@ jobs:
       - run: ls -la $PWD/*
       - name: Analyze simulation results
         run: |
-          cd testsuite/test_vs_ed
           for i in $(ls prepared-test-directories); do
             mv simulation-results-${i}* prepared-test-directories/${i}
             cd "prepared-test-directories/${i}" && ../../analysis.py
