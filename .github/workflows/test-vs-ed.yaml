@@ -59,13 +59,10 @@ jobs:
     needs: simulate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
       - name: Install pyALF
         run: pip install pyALF
       - name: Download simulation results
         uses: actions/download-artifact@v7
-        with:
-          path: testsuite/test_vs_ed/
       - run: ls -la $PWD
       - run: ls -la testsuite/test_vs_ed/
       - run: ls -la testsuite/test_vs_ed/*
