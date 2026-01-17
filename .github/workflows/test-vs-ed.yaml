@@ -61,11 +61,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install pyALF
-        run: pip install --no-deps pyALF
+        run: pip install pyALF
       - name: Download simulation results
         uses: actions/download-artifact@v7
         with:
           path: testsuite/test_vs_ed/
+      - run: ls -la $PWD
+      - run: ls -la testsuite/test_vs_ed/
+      - run: ls -la testsuite/test_vs_ed/*
       - name: Analyze simulation results
         run: |
           cd testsuite/test_vs_ed
@@ -73,11 +76,11 @@ jobs:
             cd "$dir" && ../analysis.py
             cd ..
           done
-      # - name: Upload compiled ALF binary and test directory
-      #   uses: actions/upload-artifact@v6
-      #   with:
-      #     name: simdir-${{ matrix.test_dir }}-${{ matrix.image[0] }}-${{ matrix.image[1] }}
-      #     path: |
-      #       ${{ matrix.test_dir }}/results.json
-      #       ${{ matrix.test_dir }}/test.png
-      #       ${{ matrix.test_dir }}/spec.yaml
+      - name: Upload results
+        uses: actions/upload-artifact@v6
+        with:
+          name: results
+          path: |
+            testsuite/test_vs_ed/*/results.json
+            testsuite/test_vs_ed/*/test.png
+            testsuite/test_vs_ed/*/spec.yaml
