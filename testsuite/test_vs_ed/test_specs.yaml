@@ -38,7 +38,7 @@ hubbard_finT_chain:
       beta: 2.0
       Ltau: 0
       NSweep: 1000
-      NBin: 3
+      NBin: 1000
       Mz: true
       dtau: 0.05
       Nwrap: 25
@@ -76,7 +76,7 @@ hubbard_T0_chain:
       theta: 5.0
       Ltau: 0
       NSweep: 1000
-      NBin: 3
+      NBin: 500
       Mz: true
       dtau: 0.05
       Nwrap: 15
