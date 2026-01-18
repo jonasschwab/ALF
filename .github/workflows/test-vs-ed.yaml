@@ -69,7 +69,7 @@ jobs:
         run: |
           for i in $(ls prepared-test-directories); do
             mv simulation-results-${i}* prepared-test-directories/${i}
-            cd "prepared-test-directories/${i}" && ../../analysis.py
+            cd "prepared-test-directories/${i}" && ../analysis.py
             cd ../..
           done
       - name: Upload results
