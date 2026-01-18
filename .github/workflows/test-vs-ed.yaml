@@ -59,6 +59,7 @@ jobs:
     needs: simulate
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6
       - name: Install pyALF
         run: pip install pyALF
       - name: Download simulation results
@@ -67,9 +68,10 @@ jobs:
       - run: ls -la $PWD/*
       - name: Analyze simulation results
         run: |
+          export ALF_DIR="$PWD"
           for i in $(ls prepared-test-directories); do
             mv simulation-results-${i}* prepared-test-directories/${i}
-            cd "prepared-test-directories/${i}" && ../analysis.py
+            cd "prepared-test-directories/${i}" && $ALF_DIR/testsuite/test_vs_ed/analysis.py
             cd ../..
           done
       - name: Upload results
