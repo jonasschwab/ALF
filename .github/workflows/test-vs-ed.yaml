@@ -48,6 +48,9 @@ jobs:
           ln -fs ${bindir}/gcc-${gcc_version} /usr/local/bin/gcc
           ln -fs ${bindir}/g++-${gcc_version} /usr/local/bin/g++
           echo "gcc_version=$gcc_version" >> $GITHUB_OUTPUT
+          python3 -m venv $HOME/venv
+          source $HOME/venv/bin/activate
+          python3 -m pip install pyALF PyYAML
       - name: Restore HDF5 cache
         if: runner.os == 'macOS'
         uses: actions/cache@v5
@@ -55,6 +58,7 @@ jobs:
           key: macos-HDF5-${{ steps.mac_toolchain.outputs.gcc_version }}
           path: HDF5/*/
       - name: Install pyALF and PyYAML
+        if: runner.os != 'macOS'
         run: pip3 install pyALF PyYAML
       - name: Download prepared test directories
         uses: actions/download-artifact@v7
@@ -67,6 +71,7 @@ jobs:
       - name: Run ALF test vs main branch
         run: |
           export ALF_DIR="$PWD"
+          source $HOME/venv/bin/activate
           cd prepared-test-directories/${{ matrix.test_name }}_${{ matrix.env_name }}/${{ matrix.CI_NODE_INDEX }} && 
           python3 $ALF_DIR/testsuite/test_vs_ed/simulate.py
 
