@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-import sys
-import shutil
-
 import yaml
 
 from py_alf import Simulation, ALF_source
