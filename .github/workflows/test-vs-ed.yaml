@@ -75,11 +75,16 @@ jobs:
             mv $ALF_DIR/simulation-results-${i}* $ALF_DIR/prepared-test-directories/${i}
             cd "$ALF_DIR/prepared-test-directories/${i}" && $ALF_DIR/testsuite/test_vs_ed/analysis.py
           done
+      - name: Install ImageMagick
+        run: sudo apt-get install -y imagemagick
+      - name: Merge test result images
+        run: convert prepared-test-directories/*/test.png -append results.png
       - name: Upload results
         uses: actions/upload-artifact@v6
         with:
           name: results
           path: |
+            results.png
             prepared-test-directories/*/results.json
             prepared-test-directories/*/test.png
             prepared-test-directories/*/spec.yaml
