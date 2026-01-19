@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
+import argparse
 import json
 import os
-import sys
 import yaml
 
 if __name__ == "__main__":
-    try:
-        specs_file = sys.argv[1]
-    except IndexError:
-        specs_file = "testsuite/test_vs_ed/test_specs.yaml"
-    with open(specs_file, 'r', encoding='UTF-8') as f:
+    parser = argparse.ArgumentParser(description="Prepare test directories for test vs ED based on specifications.")
+    parser.add_argument('--specs_file', default="testsuite/test_vs_ed/test_specs.yaml", help="Path to the test specifications YAML file.")
+    parser.add_argument('--output_dir', default="prepared-test-directories", help="Directory to store the prepared test directories.")
+    args = parser.parse_args()
+
+    with open(args.specs_file, 'r', encoding='UTF-8') as f:
         test_specs = yaml.safe_load(f)
     
     simulation_matrix = []
 
     for test_name, test_spec in test_specs.items():
         for env_name, env_spec in test_spec['environments'].items():
-            test_dir = f"prepared-test-directories/{test_name}_{env_name}"
+            test_dir = f"{args.output_dir}/{test_name}_{env_name}"
             os.makedirs(test_dir)
             with open(os.path.join(test_dir, "spec.yaml"), 'w', encoding='UTF-8') as f:
                 f.write(yaml.dump({

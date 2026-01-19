@@ -15,6 +15,8 @@ jobs:
 
       - id: set-matrix
         run: ./testsuite/test_vs_ed/prep_test.py
+          --specs_file testsuite/test_vs_ed/test_specs.yaml
+          --output_dir prepared-test-directories
 
       - name: Upload prepared test directories
         uses: actions/upload-artifact@v6
