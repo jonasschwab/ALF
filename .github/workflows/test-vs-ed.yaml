@@ -81,7 +81,8 @@ jobs:
     runs-on: macos-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.prepare_matrix.outputs.simulation_matrix_mac) }}
+      matrix: 
+        include: ${{ fromJson(needs.prepare_matrix.outputs.simulation_matrix_mac) }}
     steps: *simulate_steps
 
   analyze:
