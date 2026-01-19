@@ -54,8 +54,8 @@ jobs:
         with:
           key: macos-HDF5-${{ steps.mac_toolchain.outputs.gcc_version }}
           path: HDF5/*/
-      - name: Install pyALF
-        run: pip install pyALF
+      - name: Install pyALF and PyYAML
+        run: pip install pyALF PyYAML
       - name: Download prepared test directories
         uses: actions/download-artifact@v7
         with:
