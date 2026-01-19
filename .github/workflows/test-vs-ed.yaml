@@ -20,7 +20,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: prepared-test-directories
-          path: testsuite/test_vs_ed/*/
+          path: prepared-test-directories/*/
 
   simulate:
     needs: [prepare_matrix]
@@ -39,21 +39,21 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: prepared-test-directories
-          path: testsuite/test_vs_ed/
+          path: prepared-test-directories
       - run: ls -la $PWD
-      - run: ls -la testsuite/test_vs_ed/
-      - run: ls -la testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}
+      - run: ls -la prepared-test-directories/
+      - run: ls -la prepared-test-directories/${{ matrix.test_name }}_${{ matrix.env_name }}
       - name: Run ALF test vs main branch
         run: |
           export ALF_DIR="$PWD"
-          cd testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}/${{ matrix.CI_NODE_INDEX }} && 
+          cd prepared-test-directories/${{ matrix.test_name }}_${{ matrix.env_name }}/${{ matrix.CI_NODE_INDEX }} && 
           $ALF_DIR/testsuite/test_vs_ed/simulate.py
 
       - name: Upload simulation results
         uses: actions/upload-artifact@v6
         with:
           name: simulation-results-${{ matrix.test_name }}_${{ matrix.env_name }}-${{ matrix.machine }}-${{ matrix.CI_NODE_INDEX }}
-          path: testsuite/test_vs_ed/${{ matrix.test_name }}_${{ matrix.env_name }}/${{ matrix.CI_NODE_INDEX }}
+          path: prepared-test-directories/${{ matrix.test_name }}_${{ matrix.env_name }}/${{ matrix.CI_NODE_INDEX }}
 
   analyze:
     needs: simulate
@@ -70,15 +70,14 @@ jobs:
         run: |
           export ALF_DIR="$PWD"
           for i in $(ls prepared-test-directories); do
-            mv simulation-results-${i}* prepared-test-directories/${i}
-            cd "prepared-test-directories/${i}" && $ALF_DIR/testsuite/test_vs_ed/analysis.py
-            cd ../..
+            mv $ALF_DIR/simulation-results-${i}* $ALF_DIR/prepared-test-directories/${i}
+            cd "$ALF_DIR/prepared-test-directories/${i}" && $ALF_DIR/testsuite/test_vs_ed/analysis.py
           done
       - name: Upload results
         uses: actions/upload-artifact@v6
         with:
           name: results
           path: |
-            testsuite/test_vs_ed/*/results.json
-            testsuite/test_vs_ed/*/test.png
-            testsuite/test_vs_ed/*/spec.yaml
+            prepared-test-directories/*/results.json
+            prepared-test-directories/*/test.png
+            prepared-test-directories/*/spec.yaml
