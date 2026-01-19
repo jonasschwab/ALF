@@ -18,9 +18,9 @@ hubbard_finT_chain:
     PGI-21-03:
       image: ghcr.io/alf-qmc/alf-container/pyalf-requirements/bullseye-pgi-21-03
       variables: {MACHINE: PGI}
-    # macGNU:
-    #   tags: ['macos']
-    #   variables: {MACHINE: GNU}
+    macGNU:
+      tags: ['macos']
+      variables: {MACHINE: GNU}
   ham_name: "Hubbard"
   ed_energy: -1.47261997
   max_sigma: 3

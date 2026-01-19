@@ -14,6 +14,7 @@ if __name__ == "__main__":
         test_specs = yaml.safe_load(f)
     
     simulation_matrix = []
+    simulation_matrix_mac = []
 
     for test_name, test_spec in test_specs.items():
         for env_name, env_spec in test_spec['environments'].items():
@@ -33,13 +34,27 @@ if __name__ == "__main__":
                         'ham_name': test_spec["ham_name"],
                         'sim_dict': test_spec["sim_dicts"][i],
                     }))
-                simulation_matrix.append({
-                    'test_name': test_name,
-                    'env_name': env_name,
-                    'machine': env_spec['variables']['MACHINE'],
-                    'image': env_spec['image'],
-                    'CI_NODE_INDEX': i+1,
-                })
+                try:
+                    image = env_spec['image']
+                    use_container = True
+                except KeyError:
+                    use_container = False
+                if use_container:
+                    simulation_matrix.append({
+                        'test_name': test_name,
+                        'env_name': env_name,
+                        'machine': env_spec['variables']['MACHINE'],
+                        'image': env_spec['image'],
+                        'CI_NODE_INDEX': i+1,
+                    })
+                else:
+                    simulation_matrix_mac.append({
+                        'test_name': test_name,
+                        'env_name': env_name,
+                        'machine': env_spec['variables']['MACHINE'],
+                        'CI_NODE_INDEX': i+1,
+                    })
     
     with open(os.getenv('GITHUB_OUTPUT', 'test.json'), 'w+', encoding='UTF-8') as f:
       f.write(f'simulation_matrix={json.dumps(simulation_matrix)}\n')
+      f.write(f'simulation_matrix_mac={json.dumps(simulation_matrix_mac)}\n')

@@ -8,8 +8,8 @@ jobs:
   prepare_matrix:
     runs-on: ubuntu-latest
     outputs:
-      compile_matrix: ${{ steps.set-matrix.outputs.compile_matrix }}
       simulation_matrix: ${{ steps.set-matrix.outputs.simulation_matrix }}
+      simulation_matrix_mac: ${{ steps.set-matrix.outputs.simulation_matrix_mac }}
     steps:
       - uses: actions/checkout@v6
 
@@ -33,10 +33,29 @@ jobs:
       fail-fast: false
       matrix:
         include: ${{ fromJson(needs.prepare_matrix.outputs.simulation_matrix) }}
-    steps:
-      - name: Install pyALF
-        run: pip install --no-deps pyALF
+    steps: &simulate_steps
       - uses: actions/checkout@v6
+      - name: macOS Toolchain install
+        if: runner.os == 'macOS'
+        id: mac_toolchain
+        shell: bash
+        run: |
+          brew update
+          brew install mpich
+          gcc_version=$(brew list --versions gcc | grep -o '[0-9]\+' | head -1)
+          bindir=$(brew --prefix)/bin
+          ln -fs ${bindir}/gfortran-${gcc_version} /usr/local/bin/gfortran
+          ln -fs ${bindir}/gcc-${gcc_version} /usr/local/bin/gcc
+          ln -fs ${bindir}/g++-${gcc_version} /usr/local/bin/g++
+          echo "gcc_version=$gcc_version" >> $GITHUB_OUTPUT
+      - name: Restore HDF5 cache
+        if: runner.os == 'macOS'
+        uses: actions/cache@v5
+        with:
+          key: macos-HDF5-${{ steps.mac_toolchain.outputs.gcc_version }}
+          path: HDF5/*/
+      - name: Install pyALF
+        run: pip install pyALF
       - name: Download prepared test directories
         uses: actions/download-artifact@v7
         with:
@@ -56,9 +75,17 @@ jobs:
         with:
           name: simulation-results-${{ matrix.test_name }}_${{ matrix.env_name }}-${{ matrix.machine }}-${{ matrix.CI_NODE_INDEX }}
           path: prepared-test-directories/${{ matrix.test_name }}_${{ matrix.env_name }}/${{ matrix.CI_NODE_INDEX }}
+  
+  simulate_mac:
+    needs: [prepare_matrix]
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare_matrix.outputs.simulation_matrix_mac) }}
+    steps: *simulate_steps
 
   analyze:
-    needs: simulate
+    needs: [simulate, simulate_mac]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
