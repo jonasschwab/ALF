@@ -6,15 +6,15 @@ hubbard_finT_chain:
     Bookworm:
       image: ghcr.io/alf-qmc/alf-container/pyalf-requirements/bookworm
       variables: {MACHINE: GNU}
-    Intel21:
-      image: ghcr.io/alf-qmc/alf-container/pyalf-requirements/bullseye-intel
-      variables: {MACHINE: INTEL}
-    Intel-2024.2:
-      image: ghcr.io/alf-qmc/alf-container/pyalf-requirements/bookworm-intel-2024.2
-      variables: {MACHINE: INTEL}
-    IntelLLVM-Latest:
-      image: ghcr.io/alf-qmc/alf-container/pyalf-requirements/bookworm-intel
-      variables: {MACHINE: IntelLLVM}
+    # Intel21:
+    #   image: ghcr.io/alf-qmc/alf-container/pyalf-requirements/bullseye-intel
+    #   variables: {MACHINE: INTEL}
+    # Intel-2024.2:
+    #   image: ghcr.io/alf-qmc/alf-container/pyalf-requirements/bookworm-intel-2024.2
+    #   variables: {MACHINE: INTEL}
+    # IntelLLVM-Latest:
+    #   image: ghcr.io/alf-qmc/alf-container/pyalf-requirements/bookworm-intel
+    #   variables: {MACHINE: IntelLLVM}
     PGI-21-03:
       image: ghcr.io/alf-qmc/alf-container/pyalf-requirements/bullseye-pgi-21-03
       variables: {MACHINE: PGI}

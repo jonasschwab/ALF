@@ -5,7 +5,7 @@ on: workflow_dispatch
 jobs:
   test_branch:
     # needs: prepare
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     container:
       image: ghcr.io/alf-qmc/alf-container/pyalf-requirements/${{ matrix.image[0] }}
     strategy:
@@ -19,9 +19,9 @@ jobs:
           # - [tumbleweed, GNU]
           - [bullseye-pgi-21-03, PGI]
           - [bookworm-pgi-24-09, PGI]
-          - [bullseye-intel, INTEL]
-          - [bookworm-intel-2024.2, INTEL]
-          - [bookworm-intel, INTELLLVM]
+          # - [bullseye-intel, INTEL]
+          # - [bookworm-intel-2024.2, INTEL]
+          # - [bookworm-intel, INTELLLVM]
     steps:
       - name: Install pyALF
         run: pip install --no-deps pyALF

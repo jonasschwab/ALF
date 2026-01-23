@@ -35,7 +35,7 @@ jobs:
 
   create_doc:
     name: Build LaTeX documentation (doc.pdf)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: [lint_stopcommands]
     container:
       image: aergus/latex
@@ -119,7 +119,7 @@ jobs:
 
   test_linux:
     name: ${{ matrix.image_minor[0] }} · ${{ matrix.mode }} · ${{ matrix.devel }} · ${{ matrix.config }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
@@ -131,9 +131,9 @@ jobs:
           # - [tumbleweed, GNU]
           - [bullseye-pgi-21-03, PGI]
           - [bookworm-pgi-24-09, PGI]
-          - [bullseye-intel, INTEL]
-          - [bookworm-intel-2024.2, INTEL]
-          - [bookworm-intel, INTELLLVM]
+          # - [bullseye-intel, INTEL]
+          # - [bookworm-intel-2024.2, INTEL]
+          # - [bookworm-intel, INTELLLVM]
         mode: [noMPI, MPI, TEMPERING, PARALLEL_PARAMS]
         devel: ["", "Devel"]
         config: ["", "HDF5"]
@@ -165,7 +165,7 @@ jobs:
   # ======================
   valgrind_gnu_bullseye:
     name: Valgrind GNU (bullseye)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     container:
       image: ghcr.io/alf-qmc/alf-container/alf-requirements/bullseye
     steps:

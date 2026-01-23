@@ -6,7 +6,7 @@ on:
 
 jobs:
   prepare_matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     outputs:
       simulation_matrix: ${{ steps.set-matrix.outputs.simulation_matrix }}
       simulation_matrix_mac: ${{ steps.set-matrix.outputs.simulation_matrix_mac }}
@@ -26,7 +26,7 @@ jobs:
 
   simulate:
     needs: [prepare_matrix]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     container:
       image: ${{ matrix.image }}
     strategy:
@@ -115,7 +115,7 @@ jobs:
 
   analyze:
     needs: [simulate, simulate_mac]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v6
       - name: Install pyALF and PyYAML
